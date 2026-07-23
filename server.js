@@ -13,14 +13,21 @@ const server = http.createServer((req, res) => {
 
   if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
 
+  // Health check for Railway
+  if (req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('OK');
+    return;
+  }
+
   if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
     const dashPath = path.join(__dirname, 'precision_v5.html');
     if (fs.existsSync(dashPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(fs.readFileSync(dashPath));
     } else {
-      res.writeHead(404);
-      res.end('precision_v5.html not found');
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('precision_v5.html not found in: ' + __dirname);
     }
     return;
   }
@@ -57,16 +64,17 @@ const server = http.createServer((req, res) => {
         apiReq.end();
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid request' }));
+        res.end(JSON.stringify({ error: 'Invalid request: ' + err.message }));
       }
     });
     return;
   }
 
-  res.writeHead(404);
-  res.end('Not found');
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Precision GD Dashboard - use / for the dashboard');
 });
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log('Precision GD Dashboard running on port ' + PORT);
+  console.log('Files in directory: ' + fs.readdirSync(__dirname).join(', '));
 });
