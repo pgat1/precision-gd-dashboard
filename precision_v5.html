@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Precision GD — Tech Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #f5f4f1;
+  --s1: #ffffff;
+  --s2: #f0ede8;
+  --s3: #e8e4de;
+  --bdr: rgba(0,0,0,0.07);
+  --bdr2: rgba(0,0,0,0.12);
+  --tx: #1a1a18;
+  --tx2: #6b6860;
+  --tx3: #b0ada8;
+  --ac: #e8601e;
+  --ac2: #ff7a3d;
+  --gr: #1a7a4a;
+  --gr-bg: #e8f5ee;
+  --rd: #c0392b;
+  --rd-bg: #fdecea;
+  --yw: #b8860b;
+  --yw-bg: #fef9e7;
+  --bl: #1a5fa8;
+  --bl-bg: #e8f0fb;
+  --r: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--tx); font-family: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif; font-size: 14px; min-height: 100vh; }
+
+/* HEADER */
+.hdr { background: var(--tx); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 28px; height: 28px; background: var(--ac); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.logo-name { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -.2px; }
+.logo-tag { font-size: 11px; color: rgba(255,255,255,0.45); }
+.hdr-right { font-size: 11px; color: rgba(255,255,255,0.35); }
+
+/* NAV */
+.nav { background: var(--s1); border-bottom: 1px solid var(--bdr); padding: 0 28px; display: flex; gap: 0; }
+.nt { padding: 14px 18px; font-size: 13px; font-weight: 500; color: var(--tx2); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; white-space: nowrap; user-select: none; }
+.nt:hover { color: var(--tx); }
+.nt.on { color: var(--ac); border-bottom-color: var(--ac); }
+
+/* DATE BAR */
+.dbar { background: var(--s1); border-bottom: 1px solid var(--bdr); padding: 10px 28px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dbar-label { font-size: 11px; font-weight: 600; color: var(--tx3); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+.dbtns { display: flex; gap: 4px; flex-wrap: wrap; }
+.dbtn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--bdr2); background: transparent; color: var(--tx2); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.dbtn:hover { background: var(--s2); color: var(--tx); }
+.dbtn.on { background: var(--tx); color: #fff; border-color: var(--tx); }
+.cust { display: none; align-items: center; gap: 6px; background: var(--s2); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--bdr); }
+.cust input { background: var(--s1); border: 1px solid var(--bdr2); color: var(--tx); font-size: 12px; padding: 4px 8px; border-radius: 6px; outline: none; }
+.cust-apply { padding: 4px 12px; border-radius: 6px; border: none; background: var(--tx); color: #fff; font-size: 12px; font-weight: 500; cursor: pointer; }
+.rlabel { font-size: 11px; color: var(--tx3); margin-left: 6px; }
+
+/* MAIN */
+.main { padding: 24px 28px; max-width: 1400px; }
+
+/* KPI ROW */
+.krow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+.kpi { background: var(--s1); border-radius: var(--r); padding: 16px 18px; border: 1px solid var(--bdr); box-shadow: var(--shadow); }
+.kl { font-size: 11px; font-weight: 600; color: var(--tx3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.kv { font-size: 22px; font-weight: 700; color: var(--tx); letter-spacing: -.5px; }
+.ks { font-size: 11px; color: var(--tx3); margin-top: 3px; }
+
+/* FILTER BAR */
+.fb { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+.fbtn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--bdr2); background: transparent; color: var(--tx2); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.fbtn:hover { background: var(--s2); color: var(--tx); }
+.fbtn.on { background: var(--tx); color: #fff; border-color: var(--tx); }
+.sep { width: 1px; height: 18px; background: var(--bdr); margin: 0 4px; }
+.sel { background: var(--s1); border: 1px solid var(--bdr2); color: var(--tx); font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 20px; outline: none; cursor: pointer; }
+
+/* CARD */
+.card { background: var(--s1); border-radius: var(--r); border: 1px solid var(--bdr); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+.card-hdr { padding: 14px 18px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center; }
+.card-title { font-size: 14px; font-weight: 600; color: var(--tx); }
+.card-sub { font-size: 12px; color: var(--tx3); }
+.card-body { padding: 16px 18px; }
+.card-body.no-pad { padding: 0; }
+
+/* TABLE */
+table { width: 100%; border-collapse: collapse; }
+th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600; color: var(--tx3); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--bdr); white-space: nowrap; background: var(--s2); }
+td { padding: 11px 14px; border-bottom: 1px solid var(--bdr); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+.ox { overflow-x: auto; }
+.tname { font-weight: 600; font-size: 13px; color: var(--tx); }
+.tbu { font-size: 11px; color: var(--tx3); margin-top: 1px; }
+
+/* BADGES */
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+.hot { background: var(--gr-bg); color: var(--gr); }
+.steady { background: var(--bl-bg); color: var(--bl); }
+.slow { background: var(--yw-bg); color: var(--yw); }
+.cold { background: var(--rd-bg); color: var(--rd); }
+
+/* REV BAR */
+.rbar { display: flex; align-items: center; gap: 8px; }
+.rbar-bg { width: 60px; height: 4px; background: var(--s3); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.rbar-fill { height: 100%; border-radius: 2px; }
+
+/* NOTE */
+.note { font-size: 12px; color: var(--tx2); padding: 10px 14px; background: var(--s2); border-radius: 8px; border: 1px solid var(--bdr); margin-bottom: 14px; }
+
+/* SECTION LABEL */
+.slabel { font-size: 12px; font-weight: 700; color: var(--tx2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; margin-top: 4px; }
+
+/* ZIP GRID */
+.zgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.zcard { background: var(--s1); border-radius: var(--r); border: 1px solid var(--bdr); box-shadow: var(--shadow); padding: 14px 16px; }
+.zcode { font-size: 18px; font-weight: 700; color: var(--tx); }
+.zrev { font-size: 14px; font-weight: 600; color: var(--ac); margin-top: 2px; }
+.zmeta { font-size: 11px; color: var(--tx2); margin-top: 3px; }
+.zpills { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+.zpill { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.ztechs { border-top: 1px solid var(--bdr); margin-top: 10px; padding-top: 10px; }
+
+/* CHART CONTAINER */
+.chart-wrap { position: relative; width: 100%; }
+.chart-h300 { height: 300px; }
+.chart-h360 { height: 360px; }
+.chart-h400 { height: 400px; }
+.chart-h440 { height: 440px; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+/* PREDICTION TIERS */
+.tier { margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.tier-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tier-label { font-size: 13px; font-weight: 700; }
+.tier-count { font-size: 12px; color: var(--tx3); }
+
+/* RANK NUM */
+.rank { font-size: 12px; font-weight: 700; color: var(--tx3); width: 24px; text-align: center; }
+
+/* MOMENTUM */
+.mo-section { margin-bottom: 20px; }
+.mo-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+
+.hidden { display: none !important; }
+
+@media (max-width: 900px) {
+  .krow { grid-template-columns: repeat(2, 1fr); }
+  .zgrid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+  .main { padding: 16px; }
+  .hdr, .nav, .dbar { padding-left: 16px; padding-right: 16px; }
+}
+
+.sugg-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--bdr2);background:var(--s1);color:var(--tx2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.sugg-btn:hover{background:var(--tx);color:#fff;border-color:var(--tx);}
+.msg-user{align-self:flex-end;background:var(--tx);color:#fff;padding:10px 14px;border-radius:12px 12px 3px 12px;font-size:13px;max-width:80%;line-height:1.5;}
+.msg-ai{align-self:flex-start;background:var(--s2);color:var(--tx);padding:12px 16px;border-radius:12px 12px 12px 3px;font-size:13px;max-width:90%;line-height:1.6;border:1px solid var(--bdr);}
+.msg-ai b{font-weight:700;}
+.msg-typing{align-self:flex-start;color:var(--tx3);font-size:12px;padding:8px 0;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">
+    <div class="logo-icon">🚪</div>
+    <div>
+      <div class="logo-name">Precision Garage Door</div>
+      <div class="logo-tag">Service Tech Intelligence</div>
+    </div>
+  </div>
+  <div class="hdr-right">Service techs only · Revenue verified from ServiceTitan</div>
+</div>
+
+<div class="nav">
+  <div class="nt on" data-view="sc">Scorecard</div>
+  <div class="nt" data-view="tr">Trends</div>
+  <div class="nt" data-view="zi">Zip Intel</div>
+  <div class="nt" data-view="ch">Charts</div>
+  <div class="nt" data-view="mo">Momentum</div>
+  <div class="nt" data-view="pr">Next Week</div>
+  <div class="nt" data-view="ai">💬 Ask Claude</div>
+</div>
+
+<div class="dbar" id="dbar">
+  <span class="dbar-label">Range</span>
+  <div class="dbtns">
+    <button class="dbtn on" data-range="90">90 days</button>
+    <button class="dbtn" data-range="60">60 days</button>
+    <button class="dbtn" data-range="30">30 days</button>
+    <button class="dbtn" data-range="14">2 weeks</button>
+    <button class="dbtn" data-range="7">1 week</button>
+    <button class="dbtn" data-range="wktd">WKTD</button>
+    <button class="dbtn" data-range="mtd">MTD</button>
+    <button class="dbtn" data-range="custom">Custom</button>
+  </div>
+  <div class="cust" id="custbox">
+    <input type="date" id="d1" value="2026-06-22">
+    <span style="font-size:11px;color:var(--tx3)">to</span>
+    <input type="date" id="d2" value="2026-07-22">
+    <button class="cust-apply" onclick="applyCustom()">Apply</button>
+  </div>
+  <span class="rlabel" id="rlabel">Apr 22 – Jul 22, 2026</span>
+</div>
+
+<div class="main">
+
+<!-- SCORECARD -->
+<div id="view-sc">
+  <div class="krow" id="kpis"></div>
+  <div class="fb">
+    <button class="fbtn on" data-bu="all">All markets</button>
+    <button class="fbtn" data-bu="Knoxville">Knoxville</button>
+    <button class="fbtn" data-bu="Chattanooga">Chattanooga</button>
+    <button class="fbtn" data-bu="Albany">Albany</button>
+    <div class="sep"></div>
+    <select class="sel" id="sortsel">
+      <option value="rev">Revenue</option>
+      <option value="avg">Avg ticket</option>
+      <option value="conv">Conversion</option>
+      <option value="jobs">Jobs</option>
+      <option value="cb">Callbacks</option>
+      <option value="name">Name</option>
+    </select>
+  </div>
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Tech scorecard</span>
+      <span class="card-sub" id="tcount"></span>
+    </div>
+    <div class="card-body no-pad">
+      <div class="ox"><table>
+        <thead><tr>
+          <th>#</th><th>Tech</th><th>Revenue</th><th>Avg ticket</th>
+          <th>Conv</th><th>Jobs</th><th>Opps</th><th>New</th>
+          <th>Repeat</th><th>CB</th><th>Top zip</th><th>Status</th>
+        </tr></thead>
+        <tbody id="sbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRENDS -->
+<div id="view-tr" class="hidden">
+  <div class="fb">
+    <button class="fbtn on" data-tbu="all">All</button>
+    <button class="fbtn" data-tbu="Knoxville">Knoxville</button>
+    <button class="fbtn" data-tbu="Chattanooga">Chattanooga</button>
+    <button class="fbtn" data-tbu="Albany">Albany</button>
+    <div class="sep"></div>
+    <button class="fbtn on" id="btn-line" data-trmode="line">Line chart</button>
+    <button class="fbtn" id="btn-bar" data-trmode="bar">Bar chart</button>
+  </div>
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title" id="tr-title">Weekly revenue — 14 weeks</span>
+      <span class="card-sub" id="tr-sub">Apr 22 – Jul 22, 2026</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-wrap chart-h400"><canvas id="ctr" role="img" aria-label="Revenue trend"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Weekly breakdown</span>
+      <span class="card-sub" id="tr-table-sub">Green = $20K+ · Yellow = $10-20K</span>
+    </div>
+    <div class="card-body no-pad">
+      <div class="ox"><table><thead><tr id="tr-week-hdr"></tr></thead><tbody id="tr-week-body"></tbody></table></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Rankings — current range</span></div>
+    <div class="card-body no-pad">
+      <div class="ox"><table>
+        <thead><tr><th>Tech</th><th>Revenue</th><th>Avg ticket</th><th>Conv</th><th>Jobs</th><th>New</th><th>Repeat</th><th>CB</th><th>Status</th></tr></thead>
+        <tbody id="trbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ZIP INTEL -->
+<div id="view-zi" class="hidden">
+  <div class="note">Estimated revenue = verified avg ticket × job count · New + Repeat jobs · 90-day window</div>
+  <div class="krow" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi"><div class="kl">Est. total revenue</div><div class="kv">$1.08M</div><div class="ks">20 zip codes</div></div>
+    <div class="kpi"><div class="kl">Top zip</div><div class="kv">37922</div><div class="ks">$111K · 114 jobs</div></div>
+    <div class="kpi"><div class="kl">Highest avg ticket</div><div class="kv">37804</div><div class="ks">$1,065 avg/job</div></div>
+    <div class="kpi"><div class="kl">Most active</div><div class="kv">37421</div><div class="ks">107 jobs</div></div>
+  </div>
+  <div class="fb" style="margin-top:16px">
+    <button class="fbtn on" data-zf="rev">Revenue</button>
+    <button class="fbtn" data-zf="visits">Jobs</button>
+    <button class="fbtn" data-zf="avg">Avg ticket</button>
+    <button class="fbtn" data-zf="new">New jobs</button>
+    <button class="fbtn" data-zf="rpt">Repeat</button>
+  </div>
+  <div class="zgrid" id="zgrid"></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Revenue by zip</span><span class="card-sub">Top 15 · hover for detail</span></div>
+      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="czr" role="img" aria-label="Revenue by zip"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">New vs repeat by zip</span><span class="card-sub">Top 15</span></div>
+      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="czm" role="img" aria-label="Job mix by zip"></canvas></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">All zip codes</span>
+      <span class="card-sub" id="zcount"></span>
+    </div>
+    <div class="card-body no-pad">
+      <div class="ox"><table>
+        <thead><tr><th>Zip</th><th>Est Revenue</th><th>Jobs</th><th>Avg/job</th><th>New</th><th>Repeat</th><th>#1 Tech</th><th>#2 Tech</th><th>#3 Tech</th></tr></thead>
+        <tbody id="ztbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div id="view-ch" class="hidden">
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Revenue by tech</span><span class="card-sub">Color = conversion rate</span></div>
+    <div class="card-body"><div class="chart-wrap chart-h440"><canvas id="crev" role="img" aria-label="Revenue by tech"></canvas></div></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Avg ticket</span></div>
+      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="cavg" role="img" aria-label="Avg ticket"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Conversion rate</span></div>
+      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="cconv" role="img" aria-label="Conversion"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Callbacks</span></div>
+      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="ccb" role="img" aria-label="Callbacks"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">New vs repeat</span></div>
+      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="cmix" role="img" aria-label="New vs repeat"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MOMENTUM -->
+<div id="view-mo" class="hidden">
+  <div class="note">Revenue split into 3 equal periods · Trend = Period 3 vs Period 1 · Updates with date range</div>
+  <div class="mo-section">
+    <div class="mo-label" id="ms-rising" style="color:var(--gr)">📈 Rising</div>
+    <div class="card"><div class="card-body no-pad"><div class="ox"><table>
+      <thead><tr><th>Tech</th><th>Market</th><th>Period 1</th><th>Period 2</th><th>Period 3</th><th>Total</th><th>Score</th><th>Action</th></tr></thead>
+      <tbody id="mob-rising"></tbody>
+    </table></div></div></div>
+  </div>
+  <div class="mo-section">
+    <div class="mo-label" id="ms-steady" style="color:var(--bl)">➡️ Steady</div>
+    <div class="card"><div class="card-body no-pad"><div class="ox"><table>
+      <thead><tr><th>Tech</th><th>Market</th><th>Period 1</th><th>Period 2</th><th>Period 3</th><th>Total</th><th>Score</th><th>Action</th></tr></thead>
+      <tbody id="mob-steady"></tbody>
+    </table></div></div></div>
+  </div>
+  <div class="mo-section">
+    <div class="mo-label" id="ms-falling" style="color:var(--rd)">📉 Falling</div>
+    <div class="card"><div class="card-body no-pad"><div class="ox"><table>
+      <thead><tr><th>Tech</th><th>Market</th><th>Period 1</th><th>Period 2</th><th>Period 3</th><th>Total</th><th>Score</th><th>Action</th></tr></thead>
+      <tbody id="mob-falling"></tbody>
+    </table></div></div></div>
+  </div>
+  <div class="mo-section">
+    <div class="mo-label" id="ms-ramping" style="color:var(--yw)">🆕 Ramping</div>
+    <div class="card"><div class="card-body no-pad"><div class="ox"><table>
+      <thead><tr><th>Tech</th><th>Market</th><th>Period 1</th><th>Period 2</th><th>Period 3</th><th>Total</th><th>Score</th><th>Action</th></tr></thead>
+      <tbody id="mob-ramping"></tbody>
+    </table></div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Period-over-period trajectory — top 10</span></div>
+    <div class="card-body"><div class="chart-wrap chart-h360"><canvas id="cmo" role="img" aria-label="Momentum chart"></canvas></div></div>
+  </div>
+</div>
+
+<!-- NEXT WEEK -->
+<div id="view-pr" class="hidden">
+  <div class="krow" id="pr-kpis"></div>
+  <div class="fb">
+    <button class="fbtn on" data-prbu="all">All markets</button>
+    <button class="fbtn" data-prbu="Knoxville">Knoxville</button>
+    <button class="fbtn" data-prbu="Chattanooga">Chattanooga</button>
+    <button class="fbtn" data-prbu="Albany">Albany</button>
+  </div>
+
+  <div class="mo-section">
+    <div class="tier">
+      <div class="tier-dot" style="background:var(--gr)"></div>
+      <span class="tier-label" style="color:var(--gr)">Top picks</span>
+      <span class="tier-count">Highest confidence · highest upside</span>
+    </div>
+    <div class="card"><div class="card-body no-pad"><div class="ox"><table>
+      <thead><tr><th>#</th><th>Tech</th><th>Market</th><th>WKTD</th><th>Last week</th><th>Conv</th><th>Avg ticket</th><th>CB risk</th><th>Projected</th><th>Confidence</th></tr></thead>
+      <tbody id="pr-top"></tbody>
+    </table></div></div></div>
+  </div>
+
+  <div class="mo-section">
+    <div class="tier">
+      <div class="tier-dot" style="background:var(--yw)"></div>
+      <span class="tier-label" style="color:var(--yw)">Sleepers</span>
+      <span class="tier-count">Strong metrics but slow start — needs a push</span>
+    </div>
+    <div class="card"><div class="card-body no-pad"><div class="ox"><table>
+      <thead><tr><th>#</th><th>Tech</th><th>Market</th><th>WKTD</th><th>Last week</th><th>Conv</th><th>Avg ticket</th><th>CB risk</th><th>Projected</th><th>Confidence</th></tr></thead>
+      <tbody id="pr-sleep"></tbody>
+    </table></div></div></div>
+  </div>
+
+  <div class="mo-section">
+    <div class="tier">
+      <div class="tier-dot" style="background:var(--rd)"></div>
+      <span class="tier-label" style="color:var(--rd)">Watch list</span>
+      <span class="tier-count">Underperforming or high risk</span>
+    </div>
+    <div class="card"><div class="card-body no-pad"><div class="ox"><table>
+      <thead><tr><th>#</th><th>Tech</th><th>Market</th><th>WKTD</th><th>Last week</th><th>Conv</th><th>Avg ticket</th><th>CB risk</th><th>Projected</th><th>Confidence</th></tr></thead>
+      <tbody id="pr-watch"></tbody>
+    </table></div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Projected next week revenue</span>
+      <span class="card-sub">Based on WKTD daily rate × 5 days × conversion · green = high confidence</span>
+    </div>
+    <div class="card-body"><div class="chart-wrap chart-h360"><canvas id="cpr" role="img" aria-label="Next week projections"></canvas></div></div>
+  </div>
+</div>
+
+<!-- AI CHAT VIEW -->
+<div id="view-ai" class="hidden">
+  <div style="max-width:780px;margin:0 auto;">
+    <div style="text-align:center;padding:24px 0 16px;">
+      <div style="font-size:22px;font-weight:700;color:var(--tx);margin-bottom:6px;">Ask anything about your techs</div>
+      <div style="font-size:13px;color:var(--tx2);">Powered by Claude · Full context of all your ServiceTitan data</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;justify-content:center;">
+      <button class="sugg-btn" onclick="sendSugg(this)">Who had the best WKTD?</button>
+      <button class="sugg-btn" onclick="sendSugg(this)">Who should I call right now?</button>
+      <button class="sugg-btn" onclick="sendSugg(this)">Compare Patrick and Cole this month</button>
+      <button class="sugg-btn" onclick="sendSugg(this)">Who will finish the month strongest?</button>
+      <button class="sugg-btn" onclick="sendSugg(this)">What are my biggest coaching opportunities?</button>
+      <button class="sugg-btn" onclick="sendSugg(this)">Project our total revenue for this month</button>
+      <button class="sugg-btn" onclick="sendSugg(this)">Which techs have a callback problem?</button>
+      <button class="sugg-btn" onclick="sendSugg(this)">Who is underperforming right now?</button>
+    </div>
+    <div id="chat-window" style="background:var(--s1);border:1px solid var(--bdr);border-radius:12px;min-height:420px;max-height:520px;overflow-y:auto;padding:20px;margin-bottom:12px;display:flex;flex-direction:column;gap:14px;">
+      <div style="text-align:center;color:var(--tx3);font-size:13px;padding:40px 0;">Ask a question above or type below to get instant analysis of your team.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <textarea id="chat-input" placeholder="Ask about your techs, revenue, trends, coaching..."
+        style="flex:1;background:var(--s1);border:1px solid var(--bdr2);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--tx);resize:none;outline:none;min-height:48px;max-height:120px;font-family:inherit;line-height:1.5;"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"
+        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      <button onclick="sendChat()" id="send-btn" style="background:var(--tx);color:#fff;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;height:48px;">Send</button>
+    </div>
+    <div style="font-size:11px;color:var(--tx3);margin-top:8px;text-align:center;">Enter to send · Shift+Enter for new line</div>
+  </div>
+</div>
+
+<!-- TECH DRILL-DOWN MODAL -->
+<div id="drill-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:100;backdrop-filter:blur(2px);" onclick="closeDrill()"></div>
+<div id="drill-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(900px,95vw);max-height:88vh;overflow-y:auto;background:var(--s1);border-radius:14px;border:1px solid var(--bdr);box-shadow:0 20px 60px rgba(0,0,0,0.15);z-index:101;">
+  <div style="padding:20px 24px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);z-index:1;">
+    <div>
+      <div id="drill-name" style="font-size:18px;font-weight:700;color:var(--tx)"></div>
+      <div id="drill-meta" style="font-size:12px;color:var(--tx3);margin-top:2px"></div>
+    </div>
+    <button onclick="closeDrill()" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--bdr);background:var(--s2);cursor:pointer;font-size:16px;color:var(--tx2);display:flex;align-items:center;justify-content:center;">✕</button>
+  </div>
+  <div style="padding:20px 24px;">
+    <!-- KPI strip -->
+    <div id="drill-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;"></div>
+    <!-- Multi-range comparison -->
+    <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Performance across all date ranges</div>
+    <div id="drill-ranges" style="background:var(--bg);border-radius:10px;overflow:hidden;border:1px solid var(--bdr);margin-bottom:20px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr id="drill-range-hdr" style="background:var(--s2);"></tr></thead>
+        <tbody id="drill-range-body"></tbody>
+      </table>
+    </div>
+    <!-- Weekly chart -->
+    <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Weekly revenue — 14 weeks</div>
+    <div style="position:relative;width:100%;height:220px;margin-bottom:20px;"><canvas id="drill-chart" role="img" aria-label="Tech weekly revenue"></canvas></div>
+    <!-- Zip breakdown -->
+    <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Top zip codes</div>
+    <div id="drill-zips" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;"></div>
+    <!-- Notes / action -->
+    <div id="drill-action" style="background:var(--s2);border-radius:10px;padding:14px 16px;border:1px solid var(--bdr);">
+      <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Coaching note</div>
+      <div id="drill-action-text" style="font-size:13px;color:var(--tx);line-height:1.6;"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+
+// ============ SOURCE DATA (ServiceTitan 90-day verified) ============
+var T = [
+  {n:"Patrick Stockton",  bu:"Knoxville",    rev:313214,avg:1666,conv:91,opps:170,jobs:154,new:121,rpt:34,cb:4, topZip:"37934"},
+  {n:"Cole Warrington",   bu:"Albany",       rev:217858,avg:908, conv:82,opps:191,jobs:157,new:151,rpt:22,cb:3, topZip:"12866"},
+  {n:"Hunter Bridges",    bu:"Knoxville",    rev:214407,avg:1172,conv:92,opps:166,jobs:153,new:107,rpt:57,cb:8, topZip:"37922"},
+  {n:"Tony Parson",       bu:"Chattanooga",  rev:206018,avg:967, conv:93,opps:189,jobs:176,new:124,rpt:59,cb:4, topZip:"37421"},
+  {n:"Jean-Paul Collins (JP)",bu:"Chattanooga",rev:188109,avg:1017,conv:80,opps:149,jobs:119,new:104,rpt:33,cb:2,topZip:"37421"},
+  {n:"Thomas Wright",     bu:"Knoxville",    rev:181324,avg:1133,conv:92,opps:137,jobs:126,new:79, rpt:57,cb:0, topZip:"37922"},
+  {n:"Scott Hewens",      bu:"Chattanooga",  rev:172501,avg:1085,conv:97,opps:140,jobs:136,new:94, rpt:46,cb:5, topZip:"37421"},
+  {n:"Zack Maki",         bu:"Albany",       rev:159966,avg:792, conv:94,opps:143,jobs:134,new:129,rpt:19,cb:10,topZip:"12065"},
+  {n:"Preston Stockton",  bu:"Knoxville",    rev:152962,avg:884, conv:79,opps:145,jobs:115,new:54, rpt:71,cb:1, topZip:"37934"},
+  {n:"Trevor Perry",      bu:"Knoxville",    rev:150610,avg:823, conv:84,opps:153,jobs:129,new:74, rpt:64,cb:2, topZip:"37922"},
+  {n:"James Wells",       bu:"Albany",       rev:132864,avg:791, conv:91,opps:132,jobs:120,new:102,rpt:27,cb:8, topZip:"12866"},
+  {n:"Chris Pease",       bu:"Knoxville",    rev:110097,avg:792, conv:84,opps:108,jobs:91, new:46, rpt:53,cb:3, topZip:"37922"},
+  {n:"Anthony Hill",      bu:"Albany",       rev:109016,avg:609, conv:91,opps:122,jobs:111,new:85, rpt:29,cb:7, topZip:"12866"},
+  {n:"Anthony Phillips",  bu:"Chattanooga",  rev:108101,avg:908, conv:92,opps:103,jobs:95, new:55, rpt:42,cb:5, topZip:"37421"},
+  {n:"Koleton Park",      bu:"Chattanooga",  rev:106604,avg:606, conv:77,opps:145,jobs:112,new:32, rpt:99,cb:8, topZip:"37421"},
+  {n:"Derek Haynie",      bu:"Knoxville",    rev:104991,avg:607, conv:82,opps:135,jobs:111,new:51, rpt:76,cb:10,topZip:"37934"},
+  {n:"Charlie Hobson",    bu:"Knoxville",    rev:101423,avg:618, conv:80,opps:133,jobs:107,new:62, rpt:69,cb:1, topZip:"37922"},
+  {n:"Peyton Gatlin",     bu:"Knoxville",    rev:66793, avg:867, conv:86,opps:66, jobs:57, new:42, rpt:26,cb:1, topZip:"37922"},
+  {n:"Tommy Gatlin",      bu:"Knoxville",    rev:48084, avg:325, conv:37,opps:92, jobs:34, new:24, rpt:14,cb:1, topZip:"37922"},
+  {n:"Maruf Kholnazarov", bu:"Knoxville",    rev:46013, avg:548, conv:62,opps:55, jobs:34, new:9,  rpt:42,cb:1, topZip:"37934"},
+  {n:"Steven Houser",     bu:"Albany",       rev:44367, avg:457, conv:67,opps:63, jobs:42, new:25, rpt:24,cb:5, topZip:"12065"},
+  {n:"Jake Wooten",       bu:"Chattanooga",  rev:43747, avg:767, conv:89,opps:44, jobs:39, new:20, rpt:20,cb:2, topZip:"37343"}
+];
+
+// Period overrides — verified Revenue report numbers
+var OVERRIDES = {
+  wktd:{
+    "Patrick Stockton":  {rev:16450,avg:2056,conv:88, opps:8,  jobs:7},
+    "Trevor Perry":      {rev:11341,avg:1260,conv:75, opps:8,  jobs:6},
+    "Tony Parson":       {rev:10554,avg:959, conv:100,opps:10, jobs:10},
+    "Cole Warrington":   {rev:10095,avg:777, conv:90, opps:10, jobs:9},
+    "Anthony Hill":      {rev:8559, avg:713, conv:100,opps:9,  jobs:9},
+    "Zack Maki":         {rev:8260, avg:635, conv:80, opps:10, jobs:8},
+    "Preston Stockton":  {rev:8006, avg:1144,conv:67, opps:6,  jobs:4},
+    "Tommy Gatlin":      {rev:7777, avg:1296,conv:100,opps:6,  jobs:6},
+    "Anthony Phillips":  {rev:5706, avg:815, conv:86, opps:7,  jobs:6},
+    "Hunter Bridges":    {rev:5667, avg:944, conv:100,opps:6,  jobs:6},
+    "Thomas Wright":     {rev:4793, avg:959, conv:60, opps:5,  jobs:3},
+    "James Wells":       {rev:4483, avg:640, conv:100,opps:4,  jobs:4},
+    "Jake Wooten":       {rev:4228, avg:604, conv:100,opps:6,  jobs:6},
+    "Jean-Paul Collins (JP)":{rev:3846,avg:549,conv:50,opps:6,jobs:3},
+    "Derek Haynie":      {rev:3451, avg:575, conv:83, opps:6,  jobs:5},
+    "Charlie Hobson":    {rev:3199, avg:640, conv:75, opps:4,  jobs:3},
+    "Chris Pease":       {rev:2641, avg:528, conv:100,opps:4,  jobs:4},
+    "Scott Hewens":      {rev:1665, avg:555, conv:100,opps:2,  jobs:2},
+    "Koleton Park":      {rev:788,  avg:88,  conv:63, opps:8,  jobs:5},
+    "Peyton Gatlin":     {rev:0,    avg:0,   conv:0,  opps:0,  jobs:0},
+    "Maruf Kholnazarov": {rev:0,    avg:0,   conv:0,  opps:1,  jobs:0},
+    "Steven Houser":     {rev:0,    avg:0,   conv:0,  opps:0,  jobs:0}
+  },
+  7:{
+    "Cole Warrington":   {rev:24728,avg:951, conv:86, opps:21,jobs:18},
+    "Patrick Stockton":  {rev:23389,avg:1559,conv:79, opps:14,jobs:11},
+    "Preston Stockton":  {rev:19099,avg:1194,conv:85, opps:13,jobs:11},
+    "Trevor Perry":      {rev:17739,avg:1043,conv:86, opps:14,jobs:12},
+    "Zack Maki":         {rev:17103,avg:900, conv:88, opps:16,jobs:14},
+    "Hunter Bridges":    {rev:16742,avg:1288,conv:92, opps:13,jobs:12},
+    "Jean-Paul Collins (JP)":{rev:16101,avg:1073,conv:69,opps:13,jobs:9},
+    "Tony Parson":       {rev:15528,avg:971, conv:100,opps:15,jobs:15},
+    "Scott Hewens":      {rev:13116,avg:1192,conv:100,opps:10,jobs:10},
+    "Anthony Hill":      {rev:12634,avg:602, conv:100,opps:14,jobs:14},
+    "Chris Pease":       {rev:12082,avg:863, conv:92, opps:12,jobs:11},
+    "Thomas Wright":     {rev:11680,avg:1168,conv:70, opps:10,jobs:7},
+    "Anthony Phillips":  {rev:9751, avg:813, conv:90, opps:10,jobs:9},
+    "Tommy Gatlin":      {rev:8979, avg:898, conv:100,opps:7, jobs:7},
+    "Jake Wooten":       {rev:8609, avg:506, conv:100,opps:12,jobs:12},
+    "Derek Haynie":      {rev:8519, avg:532, conv:79, opps:14,jobs:11},
+    "James Wells":       {rev:6288, avg:699, conv:83, opps:6, jobs:5},
+    "Charlie Hobson":    {rev:5682, avg:474, conv:64, opps:11,jobs:7},
+    "Koleton Park":      {rev:2612, avg:187, conv:77, opps:13,jobs:10},
+    "Steven Houser":     {rev:420,  avg:210, conv:100,opps:1, jobs:1},
+    "Peyton Gatlin":     {rev:0,    avg:0,   conv:0,  opps:0, jobs:0},
+    "Maruf Kholnazarov": {rev:0,    avg:0,   conv:0,  opps:1, jobs:0}
+  },
+  14:{
+    "Cole Warrington":   {rev:43197,avg:1029,conv:88, opps:33,jobs:29},
+    "Patrick Stockton":  {rev:40845,avg:1459,conv:80, opps:25,jobs:20},
+    "Tony Parson":       {rev:34571,avg:1115,conv:93, opps:29,jobs:27},
+    "Hunter Bridges":    {rev:33156,avg:1105,conv:89, opps:28,jobs:25},
+    "Zack Maki":         {rev:33017,avg:971, conv:93, opps:29,jobs:27},
+    "Preston Stockton":  {rev:30862,avg:996, conv:81, opps:27,jobs:22},
+    "Jean-Paul Collins (JP)":{rev:30797,avg:1141,conv:82,opps:22,jobs:18},
+    "Thomas Wright":     {rev:28515,avg:1358,conv:86, opps:21,jobs:18},
+    "Anthony Phillips":  {rev:27957,avg:1075,conv:96, opps:23,jobs:22},
+    "Trevor Perry":      {rev:27098,avg:968, conv:91, opps:23,jobs:21},
+    "Tommy Gatlin":      {rev:26371,avg:977, conv:91, opps:23,jobs:21},
+    "Anthony Hill":      {rev:24314,avg:715, conv:96, opps:26,jobs:25},
+    "Chris Pease":       {rev:20110,avg:804, conv:95, opps:22,jobs:21},
+    "Scott Hewens":      {rev:19506,avg:1027,conv:100,opps:15,jobs:15},
+    "Jake Wooten":       {rev:19244,avg:583, conv:87, opps:23,jobs:20},
+    "James Wells":       {rev:18778,avg:816, conv:88, opps:17,jobs:15},
+    "Charlie Hobson":    {rev:17507,avg:673, conv:77, opps:22,jobs:17},
+    "Derek Haynie":      {rev:16762,avg:621, conv:87, opps:23,jobs:20},
+    "Koleton Park":      {rev:6764, avg:242, conv:83, opps:24,jobs:20},
+    "Steven Houser":     {rev:1188, avg:99,  conv:33, opps:6, jobs:2},
+    "Maruf Kholnazarov": {rev:130,  avg:19,  conv:0,  opps:6, jobs:0},
+    "Peyton Gatlin":     {rev:0,    avg:0,   conv:0,  opps:0, jobs:0}
+  },
+  mtd:{
+    "Patrick Stockton":  {rev:60206,avg:1699,conv:83, opps:28,jobs:26},
+    "Cole Warrington":   {rev:60452,avg:1343,conv:89, opps:40,jobs:35},
+    "Hunter Bridges":    {rev:50985,avg:1133,conv:89, opps:45,jobs:40},
+    "Tony Parson":       {rev:55473,avg:1206,conv:94, opps:43,jobs:40},
+    "Jean-Paul Collins (JP)":{rev:33264,avg:1084,conv:73,opps:30,jobs:22},
+    "Thomas Wright":     {rev:32385,avg:1295,conv:88, opps:25,jobs:22},
+    "Scott Hewens":      {rev:29042,avg:1056,conv:96, opps:27,jobs:26},
+    "Zack Maki":         {rev:40378,avg:1086,conv:95, opps:35,jobs:33},
+    "Preston Stockton":  {rev:40069,avg:1027,conv:77, opps:39,jobs:30},
+    "Trevor Perry":      {rev:30430,avg:971, conv:84, opps:31,jobs:26},
+    "James Wells":       {rev:25779,avg:960, conv:92, opps:26,jobs:24},
+    "Chris Pease":       {rev:28238,avg:1009,conv:93, opps:28,jobs:26},
+    "Anthony Hill":      {rev:30727,avg:957, conv:97, opps:31,jobs:30},
+    "Anthony Phillips":  {rev:39331,avg:1206,conv:97, opps:31,jobs:30},
+    "Koleton Park":      {rev:11809,avg:263, conv:76, opps:37,jobs:28},
+    "Derek Haynie":      {rev:28148,avg:822, conv:85, opps:33,jobs:28},
+    "Charlie Hobson":    {rev:28004,avg:778, conv:81, opps:33,jobs:27},
+    "Peyton Gatlin":     {rev:0,    avg:0,   conv:0,  opps:0, jobs:0},
+    "Tommy Gatlin":      {rev:38855,avg:1208,conv:84, opps:27,jobs:24},
+    "Maruf Kholnazarov": {rev:130,  avg:130, conv:62, opps:5, jobs:1},
+    "Steven Houser":     {rev:6574, avg:651, conv:60, opps:6, jobs:3},
+    "Jake Wooten":       {rev:29978,avg:928, conv:91, opps:29,jobs:26}
+  },
+  30:{
+    "Patrick Stockton":  {rev:103770,avg:1526,conv:87,opps:60, jobs:52},
+    "Hunter Bridges":    {rev:77873, avg:1129,conv:91,opps:65, jobs:59},
+    "Cole Warrington":   {rev:72905, avg:889, conv:85,opps:66, jobs:56},
+    "Tony Parson":       {rev:72200, avg:1031,conv:92,opps:65, jobs:60},
+    "Trevor Perry":      {rev:55995, avg:918, conv:88,opps:52, jobs:46},
+    "Preston Stockton":  {rev:55734, avg:885, conv:77,opps:53, jobs:41},
+    "Zack Maki":         {rev:51664, avg:795, conv:92,opps:51, jobs:47},
+    "Tommy Gatlin":      {rev:50465, avg:1074,conv:90,opps:39, jobs:35},
+    "Scott Hewens":      {rev:47794, avg:1017,conv:98,opps:42, jobs:41},
+    "Thomas Wright":     {rev:46544, avg:1108,conv:89,opps:38, jobs:34},
+    "Anthony Phillips":  {rev:45595, avg:970, conv:95,opps:40, jobs:38},
+    "Jean-Paul Collins (JP)":{rev:44798,avg:878,conv:77,opps:39,jobs:30},
+    "Jake Wooten":       {rev:42320, avg:717, conv:89,opps:46, jobs:41},
+    "James Wells":       {rev:39627, avg:826, conv:93,opps:40, jobs:37},
+    "Derek Haynie":      {rev:38479, avg:611, conv:84,opps:50, jobs:42},
+    "Chris Pease":       {rev:38149, avg:734, conv:90,opps:41, jobs:37},
+    "Charlie Hobson":    {rev:35707, avg:626, conv:75,opps:48, jobs:36},
+    "Anthony Hill":      {rev:34573, avg:629, conv:95,opps:39, jobs:37},
+    "Koleton Park":      {rev:14569, avg:243, conv:72,opps:46, jobs:33},
+    "Steven Houser":     {rev:1315,  avg:73,  conv:25,opps:8,  jobs:2},
+    "Peyton Gatlin":     {rev:0,     avg:0,   conv:0, opps:0,  jobs:0},
+    "Maruf Kholnazarov": {rev:195,   avg:22,  conv:0, opps:8,  jobs:0}
+  },
+  60:{
+    "Patrick Stockton":  {rev:214519,avg:1689,conv:90,opps:115,jobs:103},
+    "Hunter Bridges":    {rev:148886,avg:1182,conv:91,opps:120,jobs:109},
+    "Cole Warrington":   {rev:143736,avg:882, conv:81,opps:136,jobs:110},
+    "Tony Parson":       {rev:140251,avg:1024,conv:94,opps:125,jobs:118},
+    "Thomas Wright":     {rev:122325,avg:1143,conv:93,opps:95, jobs:88},
+    "Scott Hewens":      {rev:115738,avg:1124,conv:99,opps:90, jobs:89},
+    "Jean-Paul Collins (JP)":{rev:114365,avg:986,conv:79,opps:91,jobs:72},
+    "Zack Maki":         {rev:112639,avg:841, conv:91,opps:105,jobs:96},
+    "Preston Stockton":  {rev:107703,avg:862, conv:77,opps:104,jobs:80},
+    "Trevor Perry":      {rev:98623, avg:836, conv:85,opps:100,jobs:85},
+    "James Wells":       {rev:95630, avg:920, conv:90,opps:88, jobs:79},
+    "Anthony Phillips":  {rev:90976, avg:938, conv:93,opps:86, jobs:80},
+    "Chris Pease":       {rev:78272, avg:833, conv:89,opps:75, jobs:67},
+    "Derek Haynie":      {rev:77149, avg:643, conv:84,opps:98, jobs:82},
+    "Koleton Park":      {rev:69354, avg:598, conv:77,opps:94, jobs:72},
+    "Charlie Hobson":    {rev:59304, avg:570, conv:77,opps:86, jobs:66},
+    "Anthony Hill":      {rev:56149, avg:585, conv:91,opps:64, jobs:58},
+    "Tommy Gatlin":      {rev:50465, avg:1051,conv:90,opps:39, jobs:35},
+    "Jake Wooten":       {rev:45297, avg:755, conv:89,opps:47, jobs:42},
+    "Peyton Gatlin":     {rev:33410, avg:815, conv:89,opps:36, jobs:32},
+    "Steven Houser":     {rev:13532, avg:233, conv:50,opps:36, jobs:18},
+    "Maruf Kholnazarov": {rev:13504, avg:346, conv:57,opps:28, jobs:16}
+  },
+  90:{
+    "Patrick Stockton":  {rev:313214,avg:1666,conv:91,opps:170,jobs:154},
+    "Cole Warrington":   {rev:217858,avg:908, conv:82,opps:191,jobs:157},
+    "Hunter Bridges":    {rev:214407,avg:1172,conv:92,opps:166,jobs:153},
+    "Tony Parson":       {rev:206018,avg:967, conv:93,opps:189,jobs:176},
+    "Jean-Paul Collins (JP)":{rev:188109,avg:1017,conv:80,opps:149,jobs:119},
+    "Thomas Wright":     {rev:181324,avg:1133,conv:92,opps:137,jobs:126},
+    "Scott Hewens":      {rev:172501,avg:1085,conv:97,opps:140,jobs:136},
+    "Zack Maki":         {rev:159966,avg:792, conv:94,opps:143,jobs:134},
+    "Preston Stockton":  {rev:152962,avg:884, conv:79,opps:145,jobs:115},
+    "Trevor Perry":      {rev:150610,avg:823, conv:84,opps:153,jobs:129},
+    "James Wells":       {rev:132864,avg:791, conv:91,opps:132,jobs:120},
+    "Chris Pease":       {rev:110097,avg:792, conv:84,opps:108,jobs:91},
+    "Anthony Hill":      {rev:109016,avg:609, conv:91,opps:122,jobs:111},
+    "Anthony Phillips":  {rev:108101,avg:908, conv:92,opps:103,jobs:95},
+    "Koleton Park":      {rev:106604,avg:606, conv:77,opps:145,jobs:112},
+    "Derek Haynie":      {rev:104991,avg:607, conv:82,opps:135,jobs:111},
+    "Charlie Hobson":    {rev:101423,avg:618, conv:80,opps:133,jobs:107},
+    "Peyton Gatlin":     {rev:66793, avg:867, conv:86,opps:66, jobs:57},
+    "Tommy Gatlin":      {rev:48084, avg:325, conv:37,opps:92, jobs:34},
+    "Maruf Kholnazarov": {rev:46013, avg:548, conv:62,opps:55, jobs:34},
+    "Steven Houser":     {rev:44367, avg:457, conv:67,opps:63, jobs:42},
+    "Jake Wooten":       {rev:43747, avg:767, conv:89,opps:44, jobs:39}
+  }
+};
+
+
+// Monthly proportion splits per tech (from weekly job analysis)
+var SPLITS = {
+  "Patrick Stockton":[0.300,0.287,0.413],"Cole Warrington":[0.269,0.327,0.404],
+  "Hunter Bridges":[0.213,0.340,0.447],"Tony Parson":[0.271,0.333,0.396],
+  "Jean-Paul Collins (JP)":[0.333,0.311,0.333],"Thomas Wright":[0.213,0.383,0.404],
+  "Scott Hewens":[0.234,0.404,0.362],"Zack Maki":[0.333,0.289,0.378],
+  "Preston Stockton":[0.226,0.290,0.484],"Trevor Perry":[0.238,0.238,0.524],
+  "James Wells":[0.233,0.400,0.367],"Chris Pease":[0.269,0.192,0.539],
+  "Anthony Hill":[0.280,0.240,0.480],"Anthony Phillips":[0.000,0.480,0.520],
+  "Koleton Park":[0.200,0.560,0.240],"Derek Haynie":[0.208,0.292,0.500],
+  "Charlie Hobson":[0.313,0.375,0.313],"Peyton Gatlin":[0.429,0.500,0.071],
+  "Tommy Gatlin":[0.000,0.000,1.000],"Maruf Kholnazarov":[0.545,0.272,0.182],
+  "Steven Houser":[0.417,0.417,0.167],"Jake Wooten":[0.000,0.000,1.000]
+};
+
+var ACTIONS = {
+  "Patrick Stockton":"Keep routing premium jobs — protect his territory",
+  "Cole Warrington":"Building fast — push more opportunity volume",
+  "Hunter Bridges":"Strong run — validate with 1:1, lock in his routine",
+  "Tony Parson":"Consistent climb — reward and reinforce what's working",
+  "Jean-Paul Collins (JP)":"Consistent but flat — challenge him on avg ticket",
+  "Thomas Wright":"Big jump — find what changed and replicate it",
+  "Scott Hewens":"Good build — watch pace to confirm trend holds",
+  "Zack Maki":"Steady — push avg ticket higher",
+  "Preston Stockton":"Quietly rising — give him more doors",
+  "Trevor Perry":"Major acceleration — make sure dispatch feeds him well",
+  "James Wells":"Solid upward — keep opportunities flowing",
+  "Chris Pease":"Big jump — call him this week to reinforce momentum",
+  "Anthony Hill":"Doubling across periods — strong trajectory, stay close",
+  "Anthony Phillips":"Ramping strong — keep feeding opportunities",
+  "Koleton Park":"Spike dropped — dig into what happened mid-period",
+  "Derek Haynie":"Best % gain on team — find out what clicked",
+  "Charlie Hobson":"Flat — coach on upsell to grow avg ticket",
+  "Peyton Gatlin":"Sharp drop — immediate 1:1 needed, something changed",
+  "Tommy Gatlin":"Just ramped — strong start, stay close",
+  "Maruf Kholnazarov":"Declining — check in now, personal or performance",
+  "Steven Houser":"Fading with low conv — needs a coaching plan",
+  "Jake Wooten":"Coming on strong — monitor and support"
+};
+
+// Weekly revenue data — normalized to match verified 90-day ServiceTitan totals
+// W1=Apr 22, W14=Jul 22, 2026
+var WEEKLY = {
+  "Patrick Stockton": [5284,16302,35833,36440,30998,25624,15641,21048,41447,26906,18626,22899,7074,9092],
+  "Cole Warrington":  [25263,8226,4464,18546,22156,10264,10597,32050,9463,15805,21284,20322,11523,7895],
+  "Hunter Bridges":   [13817,10853,14932,0,29185,17536,7833,18049,18306,29434,20787,14208,14518,4949],
+  "Tony Parson":      [5052,16953,9310,20099,8973,16829,15231,30978,13905,11993,19223,21746,9019,6708],
+  "Jean-Paul Collins (JP)":[14444,6155,26508,17908,10220,30752,12467,3919,25195,5003,4249,6915,22806,1567],
+  "Thomas Wright":    [3530,7512,12042,14978,25660,10507,21574,15365,9556,15259,11958,20393,9823,3167],
+  "Scott Hewens":     [662,6581,12762,16855,15109,31145,10077,15450,15233,16069,3409,9430,12178,7540],
+  "Zack Maki":        [17186,10067,9299,17683,11546,6511,12254,19206,9846,10547,6592,8883,14243,6102],
+  "Preston Stockton": [2064,11364,7363,13249,7528,7012,10102,15204,15537,10430,17660,11656,15714,8079],
+  "Trevor Perry":     [129,9551,10449,13279,6009,6772,17969,3910,20496,21935,6588,11669,6721,15133],
+  "James Wells":      [3760,7702,9022,7493,9531,23660,9506,12468,8003,14863,2149,11792,8338,4577],
+  "Chris Pease":      [2321,23807,0,7182,4944,2215,12095,0,19769,12172,6923,6139,11572,958],
+  "Anthony Hill":     [5837,8723,5555,14176,11318,3892,3589,6274,11564,6405,3996,8575,9167,9945],
+  "Anthony Phillips": [0,0,0,1581,6221,37067,5171,4443,9058,3192,4313,22085,11118,3850],
+  "Koleton Park":     [815,7573,4530,6908,3147,18235,34883,8088,3110,4237,2408,2665,9558,446],
+  "Derek Haynie":     [3879,5652,9915,4505,7237,3160,14665,5797,9660,8036,11693,5332,11989,3472],
+  "Charlie Hobson":   [4614,8240,15464,8320,17543,1104,6027,9957,5679,3364,7567,9771,2022,1751],
+  "Peyton Gatlin":    [12256,18190,0,2894,1287,12685,7549,9429,2504,0,0,0,0,0],
+  "Tommy Gatlin":     [0,0,0,0,0,0,0,0,0,3310,12991,23088,2422,6274],
+  "Maruf Kholnazarov":[8097,9977,1821,7420,4254,728,6199,69,7380,26,0,53,0,0],
+  "Steven Houser":    [0,18305,2510,2373,6359,3063,2013,3428,3140,80,0,54,3041,0],
+  "Jake Wooten":      [0,0,0,0,0,0,0,0,0,7633,4389,29744,1119,863]
+};
+
+// Week labels and date mapping
+var WEEK_LABELS = ['Apr 22','Apr 29','May 6','May 13','May 20','May 27','Jun 3','Jun 10','Jun 17','Jun 24','Jul 1','Jul 8','Jul 15','Jul 20'];
+var WEEK_RANGE_MAP = {
+  '90': [0,14], '60': [4,14], '30': [8,14],
+  '14': [10,14], '7': [11,14], 'wktd': [13,14], 'mtd': [10,14]
+};
+
+
+// Zip data
+var Z = [
+  {z:"37922",v:114,rev:110878,avg:973, new:74,rpt:64,techs:[["Patrick Stockton",14,23324],["Hunter Bridges",17,19924],["Thomas Wright",17,19261]]},
+  {z:"37934",v:100,rev:94138, avg:941, new:64,rpt:56,techs:[["Patrick Stockton",14,23324],["Thomas Wright",15,16995],["Trevor Perry",16,13168]]},
+  {z:"37421",v:107,rev:94030, avg:879, new:54,rpt:53,techs:[["Tony Parson",31,29977],["Scott Hewens",19,20615],["Koleton Park",21,12726]]},
+  {z:"37363",v:77, rev:68886, avg:895, new:42,rpt:36,techs:[["Jean-Paul Collins (JP)",16,16272],["Scott Hewens",15,16275],["Tony Parson",14,13538]]},
+  {z:"37918",v:65, rev:63918, avg:983, new:26,rpt:39,techs:[["Patrick Stockton",8,13328],["Thomas Wright",11,12463],["Hunter Bridges",8,9376]]},
+  {z:"37343",v:67, rev:61241, avg:914, new:46,rpt:21,techs:[["Tony Parson",15,14505],["Scott Hewens",13,14105],["Jean-Paul Collins (JP)",11,11187]]},
+  {z:"37774",v:60, rev:60020, avg:1000,new:29,rpt:31,techs:[["Patrick Stockton",11,18326],["Hunter Bridges",7,8204],["Preston Stockton",9,7956]]},
+  {z:"37931",v:60, rev:58952, avg:983, new:35,rpt:24,techs:[["Patrick Stockton",9,14994],["Thomas Wright",9,10197],["Hunter Bridges",8,9376]]},
+  {z:"37923",v:56, rev:58787, avg:1050,new:36,rpt:20,techs:[["Patrick Stockton",12,19992],["Hunter Bridges",8,9376],["Thomas Wright",6,6798]]},
+  {z:"37919",v:46, rev:46219, avg:1005,new:26,rpt:20,techs:[["Patrick Stockton",8,13328],["Preston Stockton",7,6188],["Thomas Wright",6,6798]]},
+  {z:"30736",v:46, rev:41870, avg:910, new:21,rpt:25,techs:[["Tony Parson",11,10637],["Scott Hewens",9,9765],["Jean-Paul Collins (JP)",9,9153]]},
+  {z:"37803",v:45, rev:44771, avg:995, new:28,rpt:17,techs:[["Patrick Stockton",8,13328],["Thomas Wright",7,7931],["Hunter Bridges",4,4688]]},
+  {z:"12065",v:44, rev:34258, avg:779, new:34,rpt:10,techs:[["Cole Warrington",16,14528],["Zack Maki",10,7920],["James Wells",8,6328]]},
+  {z:"12866",v:47, rev:36536, avg:777, new:41,rpt:6, techs:[["Cole Warrington",16,14528],["James Wells",13,10283],["Anthony Hill",12,7308]]},
+  {z:"37804",v:35, rev:37272, avg:1065,new:24,rpt:12,techs:[["Hunter Bridges",9,10548],["Patrick Stockton",5,8330],["Trevor Perry",8,6584]]},
+  {z:"37312",v:39, rev:36366, avg:932, new:28,rpt:11,techs:[["Scott Hewens",10,10850],["Anthony Phillips",8,7264],["Jean-Paul Collins (JP)",7,7119]]},
+  {z:"37849",v:39, rev:36350, avg:932, new:16,rpt:23,techs:[["Patrick Stockton",6,9996],["Thomas Wright",4,4532],["Preston Stockton",5,4420]]},
+  {z:"12020",v:34, rev:27280, avg:802, new:28,rpt:6, techs:[["Cole Warrington",11,9988],["Zack Maki",9,7128],["James Wells",9,7119]]},
+  {z:"37377",v:37, rev:32280, avg:872, new:19,rpt:18,techs:[["Jean-Paul Collins (JP)",8,8136],["Koleton Park",11,6666],["Scott Hewens",6,6510]]},
+  {z:"37801",v:34, rev:32601, avg:959, new:18,rpt:16,techs:[["Patrick Stockton",5,8330],["Thomas Wright",5,5665],["Chris Pease",5,3960]]}
+];
+
+
+// ============ PREDICTIONS DATA ============
+var PR_DATA = [
+  {n:"Patrick Stockton",  bu:"Knoxville",    wktd:16450,wk1:23389,conv:88, avg:1666,cb:2.6, proj:22709,score:195,conf:"High"},
+  {n:"Cole Warrington",   bu:"Albany",       wktd:10095,wk1:24728,conv:90, avg:908, cb:1.9, proj:17988,score:147,conf:"High"},
+  {n:"Trevor Perry",      bu:"Knoxville",    wktd:11341,wk1:17739,conv:75, avg:823, cb:1.6, proj:13827,score:135,conf:"High"},
+  {n:"Tony Parson",       bu:"Chattanooga",  wktd:10554,wk1:15528,conv:100,avg:967, cb:2.3, proj:16765,score:130,conf:"High"},
+  {n:"Preston Stockton",  bu:"Knoxville",    wktd:8006, wk1:19099,conv:67, avg:884, cb:0.9, proj:10483,score:119,conf:"High"},
+  {n:"Zack Maki",         bu:"Albany",       wktd:8260, wk1:17103,conv:80, avg:792, cb:7.5, proj:12081,score:103,conf:"High"},
+  {n:"Tommy Gatlin",      bu:"Knoxville",    wktd:7777, wk1:8979, conv:100,avg:1296,cb:2.9, proj:11369,score:101,conf:"High"},
+  {n:"Hunter Bridges",    bu:"Knoxville",    wktd:5667, wk1:16742,conv:100,avg:1172,cb:5.2, proj:12364,score:100,conf:"High"},
+  {n:"Anthony Hill",      bu:"Albany",       wktd:8559, wk1:12634,conv:100,avg:609, cb:6.3, proj:13613,score:96, conf:"High"},
+  {n:"Thomas Wright",     bu:"Knoxville",    wktd:4793, wk1:11680,conv:60, avg:1133,cb:0.0, proj:5679, score:86, conf:"High"},
+  {n:"Jean-Paul Collins (JP)",bu:"Chattanooga",wktd:3846,wk1:16101,conv:50,avg:1017,cb:1.7,proj:5143,score:84, conf:"High"},
+  {n:"Anthony Phillips",  bu:"Chattanooga",  wktd:5706, wk1:9751, conv:86, avg:908, cb:5.3, proj:8262, score:77, conf:"High"},
+  {n:"Scott Hewens",      bu:"Chattanooga",  wktd:1665, wk1:13116,conv:100,avg:1085,cb:3.7, proj:6911, score:68, conf:"High"},
+  {n:"Chris Pease",       bu:"Knoxville",    wktd:2641, wk1:12082,conv:100,avg:792, cb:3.3, proj:7474, score:67, conf:"High"},
+  {n:"Jake Wooten",       bu:"Chattanooga",  wktd:4228, wk1:8609, conv:100,avg:767, cb:5.1, proj:7672, score:65, conf:"High"},
+  {n:"James Wells",       bu:"Albany",       wktd:4483, wk1:6288, conv:100,avg:791, cb:6.7, proj:6998, score:58, conf:"High"},
+  {n:"Charlie Hobson",    bu:"Knoxville",    wktd:3199, wk1:5682, conv:75, avg:618, cb:0.9, proj:4104, score:53, conf:"High"},
+  {n:"Derek Haynie",      bu:"Knoxville",    wktd:3451, wk1:8519, conv:83, avg:607, cb:9.0, proj:5693, score:47, conf:"High"},
+  {n:"Peyton Gatlin",     bu:"Knoxville",    wktd:0,    wk1:0,    conv:86, avg:867, cb:1.8, proj:0,    score:24, conf:"Low"},
+  {n:"Koleton Park",      bu:"Chattanooga",  wktd:788,  wk1:2612, conv:63, avg:606, cb:7.1, proj:1155, score:16, conf:"High"},
+  {n:"Maruf Kholnazarov", bu:"Knoxville",    wktd:0,    wk1:0,    conv:62, avg:548, cb:2.9, proj:0,    score:13, conf:"Low"},
+  {n:"Steven Houser",     bu:"Albany",       wktd:0,    wk1:420,  conv:67, avg:457, cb:11.9,proj:113,  score:-1, conf:"Medium"}
+];
+
+var curPRBU = 'all';
+
+// ============ RENDER PREDICTIONS ============
+function renderPr() {
+  var d = curPRBU === 'all' ? PR_DATA.slice() : PR_DATA.filter(function(t){return t.bu.indexOf(curPRBU)>=0;});
+  d.sort(function(a,b){return b.score-a.score;});
+
+  // KPIs
+  var active = d.filter(function(t){return t.proj>0;});
+  var totalProj = active.reduce(function(s,t){return s+t.proj;},0);
+  var topTech = d[0];
+  var highCB = d.filter(function(t){return t.cb>=7;}).length;
+  var highConf = d.filter(function(t){return t.conf==='High'&&t.proj>10000;}).length;
+  document.getElementById('pr-kpis').innerHTML =
+    '<div class="kpi"><div class="kl">Est. next week total</div><div class="kv">'+fmtN(totalProj)+'</div><div class="ks">'+active.length+' active techs</div></div>'+
+    '<div class="kpi"><div class="kl">Top predicted earner</div><div class="kv" style="font-size:14px">'+topTech.n.split(' ').pop()+'</div><div class="ks">'+fmtN(topTech.proj)+' projected</div></div>'+
+    '<div class="kpi"><div class="kl">High confidence picks</div><div class="kv" style="color:var(--gr)">'+highConf+'</div><div class="ks">$10K+ projected</div></div>'+
+    '<div class="kpi"><div class="kl">CB risk flags</div><div class="kv" style="color:'+(highCB>0?'var(--rd)':'var(--gr)')+'">'+highCB+'</div><div class="ks">7%+ callback rate</div></div>';
+
+  function prRow(t, rank) {
+    var cbCol = t.cb>=7?'var(--rd)':t.cb>=4?'var(--yw)':'var(--gr)';
+    var confCol = t.conf==='High'?'var(--gr)':t.conf==='Medium'?'var(--yw)':'var(--tx3)';
+    var convCol = t.conv>=90?'var(--gr)':t.conv>=75?'var(--tx)':'var(--rd)';
+    return '<tr>'+
+      '<td style="font-size:12px;color:var(--tx3);font-weight:600">#'+rank+'</td>'+
+      '<td><div class="tn">'+t.n+'</div></td>'+
+      '<td><div class="tb" style="font-size:12px">'+t.bu+'</div></td>'+
+      '<td style="font-size:12px;font-weight:500">'+(t.wktd>0?fmtN(t.wktd):'—')+'</td>'+
+      '<td style="font-size:12px;color:var(--tx2)">'+(t.wk1>0?fmtN(t.wk1):'—')+'</td>'+
+      '<td style="font-size:12px;font-weight:600;color:'+convCol+'">'+t.conv+'%</td>'+
+      '<td style="font-size:12px">'+fmtFull(t.avg)+'</td>'+
+      '<td style="font-size:12px;font-weight:600;color:'+cbCol+'">'+t.cb+'%</td>'+
+      '<td style="font-size:13px;font-weight:700;color:var(--ac)">'+(t.proj>0?fmtN(t.proj):'—')+'</td>'+
+      '<td style="font-size:11px;color:var(--tx2)">'+Math.round(t.score)+'</td>'+
+      '<td style="font-size:11px;font-weight:600;color:'+confCol+'">'+t.conf+'</td>'+
+    '</tr>';
+  }
+
+  // Top picks: score >= 90, high confidence
+  var topPicks  = d.filter(function(t){return t.score>=90;});
+  // Sleepers: lower WKTD but strong 1wk and conv
+  var sleepers  = d.filter(function(t){return t.score>=50&&t.score<90&&t.wktd<t.wk1*0.5&&t.conv>=80;});
+  // Watch list: everyone else
+  var watched   = d.filter(function(t){return t.score<50||(t.score<90&&!(t.score>=50&&t.wktd<t.wk1*0.5&&t.conv>=80));});
+
+  var empty = '<tr><td colspan="11" style="color:var(--tx3);font-size:12px;padding:14px;text-align:center">None in this category</td></tr>';
+  document.getElementById('pr-top').innerHTML   = topPicks.length  ? topPicks.map(function(t,i){return prRow(t,i+1);}).join('')  : empty;
+  document.getElementById('pr-sleep').innerHTML = sleepers.length  ? sleepers.map(function(t,i){return prRow(t,topPicks.length+i+1);}).join('') : empty;
+  document.getElementById('pr-watch').innerHTML = watched.length   ? watched.map(function(t,i){return prRow(t,topPicks.length+sleepers.length+i+1);}).join('') : empty;
+
+  // Chart
+  destroyChart('cpr');
+  var chartData = d.filter(function(t){return t.proj>0;}).sort(function(a,b){return b.proj-a.proj;});
+  CH.cpr = new Chart(document.getElementById('cpr').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:chartData.map(function(t){return t.n.split(' ').pop();}),
+      datasets:[{
+        label:'Projected revenue',
+        data:chartData.map(function(t){return t.proj;}),
+        backgroundColor:chartData.map(function(t){return t.conf==='High'?'#3ab870':t.conf==='Medium'?'#f0b429':'#5a5754';}),
+        borderRadius:4,borderSkipped:false
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(i){return 'Projected: $'+i.raw.toLocaleString();} }}},
+      scales:{
+        x:{ticks:{color:'#6b6860',font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}},
+        y:{ticks:{color:'#9a9690',font:{size:10},callback:function(v){return '$'+(v/1000).toFixed(0)+'K';}},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
+}
+
+
+// ============ TECH DRILL-DOWN ============
+var drillChart = null;
+
+// Zip data per tech (top zips from 90d invoice analysis)
+var TECH_ZIPS = {
+  "Patrick Stockton":  [{z:"37922",jobs:14,rev:23324},{z:"37934",jobs:14,rev:23324},{z:"37923",jobs:12,rev:19992},{z:"37931",jobs:9,rev:14994},{z:"37774",jobs:11,rev:18326}],
+  "Cole Warrington":   [{z:"12866",jobs:16,rev:14528},{z:"12065",jobs:16,rev:14528},{z:"12020",jobs:11,rev:9988},{z:"12309",jobs:8,rev:7264}],
+  "Hunter Bridges":    [{z:"37922",jobs:17,rev:19924},{z:"37931",jobs:8,rev:9376},{z:"37923",jobs:8,rev:9376},{z:"37918",jobs:8,rev:9376}],
+  "Tony Parson":       [{z:"37421",jobs:31,rev:29977},{z:"37363",jobs:14,rev:13538},{z:"37343",jobs:15,rev:14505},{z:"30736",jobs:11,rev:10637}],
+  "Jean-Paul Collins (JP)":[{z:"37421",jobs:10,rev:10170},{z:"37363",jobs:16,rev:16272},{z:"30736",jobs:9,rev:9153}],
+  "Thomas Wright":     [{z:"37922",jobs:17,rev:19261},{z:"37934",jobs:15,rev:16995},{z:"37918",jobs:11,rev:12463}],
+  "Scott Hewens":      [{z:"37421",jobs:19,rev:20615},{z:"37363",jobs:15,rev:16275},{z:"37343",jobs:13,rev:14105}],
+  "Zack Maki":         [{z:"12065",jobs:10,rev:7920},{z:"12866",jobs:5,rev:3960},{z:"12020",jobs:9,rev:7128}],
+  "Preston Stockton":  [{z:"37934",jobs:12,rev:10608},{z:"37774",jobs:9,rev:7956},{z:"37923",jobs:7,rev:6188}],
+  "Trevor Perry":      [{z:"37922",jobs:18,rev:14814},{z:"37934",jobs:16,rev:13168},{z:"37918",jobs:11,rev:9053}],
+  "James Wells":       [{z:"12866",jobs:13,rev:10283},{z:"12065",jobs:8,rev:6328},{z:"12020",jobs:9,rev:7119}],
+  "Chris Pease":       [{z:"37922",jobs:12,rev:9504},{z:"37923",jobs:8,rev:6336},{z:"37931",jobs:6,rev:4752}],
+  "Anthony Hill":      [{z:"12866",jobs:12,rev:7308},{z:"12065",jobs:6,rev:3654},{z:"12020",jobs:5,rev:3045}],
+  "Anthony Phillips":  [{z:"37343",jobs:11,rev:9988},{z:"37421",jobs:8,rev:7264},{z:"37312",jobs:8,rev:7264}],
+  "Koleton Park":      [{z:"37421",jobs:21,rev:12726},{z:"37377",jobs:11,rev:6666},{z:"37363",jobs:13,rev:7878}],
+  "Derek Haynie":      [{z:"37934",jobs:9,rev:5463},{z:"37931",jobs:9,rev:5463},{z:"37849",jobs:6,rev:3642}],
+  "Charlie Hobson":    [{z:"37922",jobs:10,rev:6180},{z:"37934",jobs:16,rev:9888},{z:"37774",jobs:8,rev:4944}],
+  "Peyton Gatlin":     [{z:"37922",jobs:6,rev:5202},{z:"37934",jobs:5,rev:4335}],
+  "Tommy Gatlin":      [{z:"37922",jobs:5,rev:6480},{z:"37918",jobs:2,rev:2592}],
+  "Maruf Kholnazarov": [{z:"37934",jobs:6,rev:3288},{z:"37922",jobs:2,rev:1096}],
+  "Steven Houser":     [{z:"12065",jobs:4,rev:1828},{z:"12866",jobs:1,rev:457}],
+  "Jake Wooten":       [{z:"37343",jobs:7,rev:5369},{z:"37421",jobs:12,rev:9204}]
+};
+
+var COACHING = {
+  "Patrick Stockton":  "Your top earner by a significant margin. Protect his schedule and keep routing him premium jobs in 37922 and 37934. At $1,666 avg ticket he's your highest revenue-per-job tech — make sure dispatch prioritizes him on larger jobs.",
+  "Cole Warrington":   "Albany's engine. Strong WKTD pace and building momentum. His avg ticket is lower than his potential — coaching on upsell could push him significantly higher.",
+  "Hunter Bridges":    "Consistent and reliable. 92% conversion is excellent. His volume is high but avg ticket has room to grow — focus on upsell coaching to push past $1,200.",
+  "Tony Parson":       "100% conversion WKTD shows he's locked in. Chattanooga's most consistent performer. Keep his call volume high and he delivers.",
+  "Jean-Paul Collins (JP)": "Talented but inconsistent. 50% WKTD conversion is a red flag — needs a direct conversation. When he's on he's one of the best. Find out what's affecting him this week.",
+  "Thomas Wright":     "60% WKTD conversion needs attention. He has the avg ticket to be a top earner but leaving too many opps on the table. Focus on close rate coaching.",
+  "Scott Hewens":      "97% conversion over 90 days is the best on the team. Low WKTD likely a scheduling issue not a performance issue. Get him more calls.",
+  "Zack Maki":         "Strong and steady in Albany. 94% conversion. CB count is the highest concern — 10 over 90 days warrants a quality check on his work.",
+  "Preston Stockton":  "Big week recently but WKTD conversion dropped to 67%. Monitor closely — could be a one-off or a trend forming.",
+  "Trevor Perry":      "Hot right now. Strong WKTD and building. Keep feeding him opportunities in his best zips.",
+  "James Wells":       "Solid Albany performer. 100% WKTD conversion. CB count worth watching but overall trajectory is positive.",
+  "Chris Pease":       "100% WKTD conversion is excellent. Revenue still catching up to his potential — give him more volume.",
+  "Anthony Hill":      "100% conversion WKTD, strong in Albany. CB rate is a concern at 6.3% — check quality of work.",
+  "Anthony Phillips":  "Strong metrics but CB count flags quality risk. 92% conversion is good. Worth a conversation about callbacks.",
+  "Koleton Park":      "Avg ticket is significantly below team average. He's seeing plenty of opps but not converting to revenue. Needs pricing and upsell coaching urgently.",
+  "Derek Haynie":      "Highest callback count on the team at 10. This is a quality issue that needs to be addressed before it gets worse.",
+  "Charlie Hobson":    "Consistent but flat. Low avg ticket and conversion. A coaching session focused on upsell and close rate would have high impact here.",
+  "Peyton Gatlin":     "Not active this WKTD — check scheduling. When active he performs decently. Needs more consistent volume.",
+  "Tommy Gatlin":      "Ramping strong — 100% WKTD conversion and above-average avg ticket. Keep the momentum going with consistent scheduling.",
+  "Maruf Kholnazarov": "Very limited activity. Needs attention — either a scheduling issue or a motivation/performance issue.",
+  "Steven Houser":     "Low conversion and activity. Needs a dedicated coaching plan. CB rate is concerning relative to his job volume.",
+  "Jake Wooten":       "100% WKTD conversion — great sign for a newer tech. Revenue building, keep him active and supported."
+};
+
+function openDrill(techName) {
+  var t90  = OVERRIDES['90'][techName]  || {};
+  var t60  = OVERRIDES['60'][techName]  || {};
+  var t30  = OVERRIDES['30'][techName]  || {};
+  var t14  = OVERRIDES['14'][techName]  || {};
+  var t7   = OVERRIDES['7'][techName]   || {};
+  var tmtd = OVERRIDES['mtd'][techName] || {};
+  var twktd= OVERRIDES['wktd'][techName]|| {};
+  var tBase= T.find(function(x){return x.n===techName;}) || {};
+  var zips = TECH_ZIPS[techName] || [];
+  var weekly = WEEKLY[techName] || Array(14).fill(0);
+
+  document.getElementById('drill-name').textContent = techName;
+  document.getElementById('drill-meta').textContent = tBase.bu + ' · Top zip: ' + (tBase.topZip||'—');
+
+  // KPI strip — use 90d as base
+  var cbPct = tBase.jobs > 0 ? (tBase.cb/tBase.jobs*100).toFixed(1) : '0';
+  // Use current selected range for KPI strip
+  var ovKey = OVERRIDE_KEYS[curRange] || curRange;
+  var tCur = (OVERRIDES[ovKey] && OVERRIDES[ovKey][techName]) ? OVERRIDES[ovKey][techName] : t90;
+  var rangeLabel = {'90':'90 days','60':'60 days','30':'30 days','14':'2 weeks','7':'1 week','wktd':'WKTD','mtd':'MTD','custom':'Custom'}[curRange] || curRange;
+  document.getElementById('drill-kpis').innerHTML =
+    kpiBox(rangeLabel + ' Revenue', fmtFull(tCur.rev||0), '') +
+    kpiBox('Avg ticket', fmtFull(tCur.avg||0), rangeLabel+' avg') +
+    kpiBox('Conversion', (tCur.conv||0)+'%', rangeLabel+' rate') +
+    kpiBox('CB rate', cbPct+'%', tBase.cb+' total callbacks');
+
+  // Range comparison table
+  var ranges = [
+    {label:'WKTD',  d:twktd},
+    {label:'1 week',d:t7},
+    {label:'2 weeks',d:t14},
+    {label:'MTD',   d:tmtd},
+    {label:'30 days',d:t30},
+    {label:'60 days',d:t60},
+    {label:'90 days',d:t90}
+  ];
+  var hdr = '<th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;">Metric</th>';
+  ranges.forEach(function(r){ hdr += '<th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;">'+r.label+'</th>'; });
+  document.getElementById('drill-range-hdr').innerHTML = hdr;
+
+  var metrics = [
+    {label:'Revenue', key:'rev', fmt:fmtN},
+    {label:'Avg ticket', key:'avg', fmt:fmtFull},
+    {label:'Conv rate', key:'conv', fmt:function(v){return v+'%';}},
+    {label:'Jobs', key:'jobs', fmt:function(v){return v;}},
+    {label:'Opps', key:'opps', fmt:function(v){return v;}}
+  ];
+  document.getElementById('drill-range-body').innerHTML = metrics.map(function(m){
+    var cells = ranges.map(function(r){
+      var val = r.d[m.key];
+      var disp = (val !== undefined && val !== null && val > 0) ? m.fmt(val) : '—';
+      return '<td style="padding:9px 12px;text-align:right;font-size:12px;color:var(--tx);">'+disp+'</td>';
+    }).join('');
+    return '<tr style="border-top:1px solid var(--bdr)"><td style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--tx2);">'+m.label+'</td>'+cells+'</tr>';
+  }).join('');
+
+  // Weekly chart
+  if(drillChart) { drillChart.destroy(); drillChart = null; }
+  drillChart = new Chart(document.getElementById('drill-chart').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:WEEK_LABELS,
+      datasets:[{
+        label:'Revenue',
+        data:weekly,
+        backgroundColor:weekly.map(function(v){return v>=20000?'#1a7a4a':v>=10000?'#1a5fa8':'#d0cdc8';}),
+        borderRadius:4,borderSkipped:false
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(i){return '$'+i.raw.toLocaleString();}}}},
+      scales:{
+        x:{ticks:{color:'#9a9690',font:{size:9}},grid:{color:'rgba(0,0,0,0.04)'}},
+        y:{ticks:{color:'#9a9690',font:{size:9},callback:function(v){return '$'+(v/1000).toFixed(0)+'K';}},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
+
+  // Zip cards
+  document.getElementById('drill-zips').innerHTML = zips.slice(0,6).map(function(z){
+    return '<div style="background:var(--bg);border-radius:8px;border:1px solid var(--bdr);padding:10px 12px;">'+
+      '<div style="font-size:14px;font-weight:700;color:var(--tx)">'+z.z+'</div>'+
+      '<div style="font-size:12px;font-weight:600;color:var(--ac);margin-top:1px">'+fmtN(z.rev)+' est.</div>'+
+      '<div style="font-size:11px;color:var(--tx3);margin-top:1px">'+z.jobs+' jobs</div>'+
+    '</div>';
+  }).join('') || '<div style="color:var(--tx3);font-size:12px;">No zip data available</div>';
+
+  // Coaching note
+  document.getElementById('drill-action-text').textContent = COACHING[techName] || 'No coaching notes available.';
+
+  // Show modal
+  document.getElementById('drill-overlay').style.display = 'block';
+  document.getElementById('drill-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrill() {
+  document.getElementById('drill-overlay').style.display = 'none';
+  document.getElementById('drill-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function kpiBox(label, val, sub) {
+  return '<div style="background:var(--bg);border-radius:10px;border:1px solid var(--bdr);padding:12px 14px;">'+
+    '<div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">'+label+'</div>'+
+    '<div style="font-size:18px;font-weight:700;color:var(--tx);letter-spacing:-.3px;">'+val+'</div>'+
+    (sub?'<div style="font-size:10px;color:var(--tx3);margin-top:2px;">'+sub+'</div>':'')+
+  '</div>';
+}
+
+// Make tech names clickable in scorecard
+function makeTechClickable(name) {
+  return '<span onclick="openDrill(\'' + name.replace(/'/g, "\\'") + '\')" style="cursor:pointer;border-bottom:1px dotted var(--tx3);" title="Click for full profile">'+name+'</span>';
+}
+
+// ============ STATE ============
+// Initialize TD from 90d verified data
+var TD = T.map(function(t) {
+  var ov90 = OVERRIDES['90'] ? OVERRIDES['90'][t.n] : null;
+  if(ov90 && typeof ov90 === 'object') {
+    return {n:t.n,bu:t.bu,topZip:t.topZip,rev:ov90.rev,avg:ov90.avg,conv:ov90.conv,jobs:ov90.jobs,opps:ov90.opps,new:t.new,rpt:t.rpt,cb:t.cb};
+  }
+  return Object.assign({},t);
+});
+var curView = 'sc';
+var curBU = 'all';
+var curTBU = 'all';
+var curZF = 'rev';
+var curSort = 'rev';
+var curRange = '90';
+var CH = {};
+
+// ============ HELPERS ============
+function fmtN(n) {
+  if(n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if(n >= 1000) return '$' + (n/1000).toFixed(0) + 'K';
+  return '$' + Math.round(n);
+}
+function fmtFull(n) { return '$' + Math.round(n).toLocaleString(); }
+function ccol(conv) { return conv >= 90 ? '#1a7a4a' : conv >= 75 ? '#1a5fa8' : '#c0392b'; }
+function destroyChart(id) { if(CH[id]) { CH[id].destroy(); delete CH[id]; } }
+
+function statusOf(t) {
+  // Use dynamic team average from current TD (updates with date range)
+  var teamAvg = TD.reduce(function(s,x){return s+x.rev;},0) / TD.length;
+  var teamConv = TD.reduce(function(s,x){return s+x.conv;},0) / TD.length;
+  var revScore  = teamAvg > 0 ? (t.rev - teamAvg) / teamAvg * 100 : 0;
+  var convScore = teamConv > 0 ? (t.conv - teamConv) / teamConv * 100 : 0;
+  var score = revScore*0.6 + convScore*0.4;
+  if(score >= 15)  return {l:'🔥 HOT',    c:'hot'};
+  if(score >= -15) return {l:'✅ STEADY',  c:'steady'};
+  if(score >= -35) return {l:'⚠️ SLOW',   c:'slow'};
+  return {l:'❌ COLD', c:'cold'};
+}
+
+// ============ DATE RANGE ============
+document.querySelectorAll('.dbtn[data-range]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.dbtn').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');
+    var range = btn.getAttribute('data-range');
+    document.getElementById('custbox').style.display = range === 'custom' ? 'flex' : 'none';
+    if(range !== 'custom') applyRange(range);
+  });
+});
+
+var RANGE_INFO = {
+  '90':   {label:'Apr 22 – Jul 22, 2026',  mult:1.000},
+  '60':   {label:'May 23 – Jul 22, 2026',  mult:0.667},
+  '30':   {label:'Jun 23 – Jul 22, 2026',  mult:0.333},
+  '14':   {label:'Jul 8 – Jul 22, 2026',   mult:0.156},
+  '7':    {label:'Jul 15 – Jul 22, 2026',  mult:0.078},
+  'wktd': {label:'Jul 20 – Jul 22, 2026',  mult:0.033},
+  'mtd':  {label:'Jul 1 – Jul 22, 2026',   mult:0.242}
+};
+var OVERRIDE_KEYS = {'90':'90','60':'60','30':'30','14':'14','7':'7','wktd':'wktd','mtd':'mtd'};
+var OVERRIDE_KEYS = {'90':'90','14':'14','7':'7','wktd':'wktd','mtd':'mtd'};
+
+function applyRange(range) {
+  curRange = range;
+  var info = RANGE_INFO[range] || {label:'Custom', mult:0.333};
+  document.getElementById('rlabel').textContent = info.label;
+  // Look up override: try range key directly, then as integer
+  var ov = OVERRIDES[range] || OVERRIDES[parseInt(range)] || null;
+  var mult = info.mult;
+  TD = T.map(function(t) {
+    var ovT = ov ? ov[t.n] : null;
+    var isObj = ovT !== null && ovT !== undefined && typeof ovT === 'object';
+    var isNum  = ovT !== null && ovT !== undefined && typeof ovT === 'number';
+    return {
+      n:      t.n,
+      bu:     t.bu,
+      topZip: t.topZip,
+      rev:    isObj ? ovT.rev  : (isNum ? ovT : Math.round(t.rev  * mult)),
+      avg:    isObj ? ovT.avg  : t.avg,
+      conv:   isObj ? ovT.conv : t.conv,
+      jobs:   isObj ? ovT.jobs : Math.round(t.jobs * mult),
+      opps:   isObj ? ovT.opps : Math.round(t.opps * mult),
+      new:    Math.round(t.new * mult),
+      rpt:    Math.round(t.rpt * mult),
+      cb:     Math.round(t.cb  * mult)
+    };
+  });
+  renderAll();
+}
+
+function applyCustom() {
+  var s = document.getElementById('d1').value;
+  var e = document.getElementById('d2').value;
+  if(!s || !e) return;
+  var start = new Date(s), end = new Date(e);
+  if(start >= end) return;
+  var days = (end - start) / (1000*60*60*24);
+  var mult = Math.min(1, days/91);
+  var fmt2 = function(d) { return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+  document.getElementById('rlabel').textContent = fmt2(start) + ' – ' + fmt2(end);
+  curRange = 'custom';
+  TD = T.map(function(t) {
+    return {
+      n:t.n, bu:t.bu, avg:t.avg, conv:t.conv, topZip:t.topZip,
+      rev:Math.round(t.rev*mult), jobs:Math.round(t.jobs*mult),
+      opps:Math.round(t.opps*mult), new:Math.round(t.new*mult),
+      rpt:Math.round(t.rpt*mult), cb:Math.round(t.cb*mult)
+    };
+  });
+  renderAll();
+}
+
+// ============ NAV ============
+document.querySelectorAll('.nt[data-view]').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.nt').forEach(function(t){t.classList.remove('on');});
+    tab.classList.add('on');
+    curView = tab.getAttribute('data-view');
+    document.querySelectorAll('[id^="view-"]').forEach(function(v){
+      v.classList.toggle('hidden', v.id !== 'view-'+curView);
+    });
+    if(curView === 'zi') renderZips();
+    if(curView === 'ch') renderCharts();
+    if(curView === 'mo') renderMo();
+    if(curView === 'tr') renderTrends();
+    if(curView === 'pr') renderPr();
+    // Hide date bar on Next Week tab - it's always forward-looking
+    document.querySelector('.dbar').style.display = (curView === 'pr') ? 'none' : 'flex';
+  });
+});
+
+// ============ BU FILTER ============
+document.querySelectorAll('.fbtn[data-bu]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.fbtn[data-bu]').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');
+    curBU = btn.getAttribute('data-bu');
+    renderScore();
+  });
+});
+
+document.querySelectorAll('.fbtn[data-tbu]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.fbtn[data-tbu]').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');
+    curTBU = btn.getAttribute('data-tbu');
+    renderTrends();
+  });
+});
+
+document.querySelectorAll('.fbtn[data-zf]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.fbtn[data-zf]').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');
+    curZF = btn.getAttribute('data-zf');
+    renderZips();
+  });
+});
+
+document.getElementById('sortsel').addEventListener('change', function() {
+  curSort = this.value;
+  renderScore();
+});
+
+// ============ RENDER ALL ============
+function renderAll() {
+  renderScore();
+  if(curView === 'tr') renderTrends();
+  if(curView === 'zi') renderZips();
+  if(curView === 'ch') renderCharts();
+  if(curView === 'mo') renderMo();
+  if(curView === 'pr') renderPr();
+}
+
+// ============ KPIs ============
+function renderKPIs(d) {
+  var tr  = d.reduce(function(s,t){return s+t.rev;},0);
+  var tj  = d.reduce(function(s,t){return s+t.jobs;},0);
+  var top = d.reduce(function(s,t){return s+t.opps;},0);
+  // Avg ticket = total revenue / total jobs (real rate, not avg of averages)
+  var ta  = tj > 0 ? tr / tj : 0;
+  // Avg conv = total jobs / total opps (real rate, not avg of averages)
+  var tc  = top > 0 ? (tj / top) * 100 : 0;
+  var hcb = d.filter(function(t){return t.cb>=5;}).length;
+  var tcb = d.reduce(function(s,t){return s+t.cb;},0);
+  document.getElementById('kpis').innerHTML =
+    '<div class="kpi"><div class="kl">Total revenue</div><div class="kv">'+fmtN(tr)+'</div><div class="ks">'+d.length+' service techs</div></div>' +
+    '<div class="kpi"><div class="kl">Total jobs</div><div class="kv">'+tj.toLocaleString()+'</div><div class="ks">'+top.toLocaleString()+' opps seen</div></div>' +
+    '<div class="kpi"><div class="kl">Team avg ticket</div><div class="kv">'+fmtFull(ta)+'</div><div class="ks">revenue ÷ jobs closed</div></div>' +
+    '<div class="kpi"><div class="kl">Team conv rate</div><div class="kv">'+tc.toFixed(1)+'%</div><div class="ks">jobs ÷ opps</div></div>' +
+    '<div class="kpi"><div class="kl">Total callbacks</div><div class="kv" style="color:'+(hcb>0?'var(--rd)':'var(--gr)')+'">'+tcb+'</div><div class="ks">'+hcb+' techs with 5+</div></div>';
+}
+
+// ============ SCORECARD ============
+function renderScore() {
+  var d = curBU === 'all' ? TD.slice() : TD.filter(function(t){return t.bu.indexOf(curBU)>=0;});
+  renderKPIs(d.slice());
+  var mx = Math.max.apply(null, d.map(function(t){return t.rev;}));
+  var SORTS = {
+    rev:function(a,b){return b.rev-a.rev;},
+    avg:function(a,b){return b.avg-a.avg;},
+    conv:function(a,b){return b.conv-a.conv;},
+    jobs:function(a,b){return b.jobs-a.jobs;},
+    cb:function(a,b){return b.cb-a.cb;},
+    name:function(a,b){return a.n.localeCompare(b.n);}
+  };
+  d.sort(SORTS[curSort] || SORTS.rev);
+  document.getElementById('tcount').textContent = d.length + ' techs';
+  document.getElementById('sbody').innerHTML = d.map(function(t,i) {
+    var st = statusOf(t);
+    var bp = Math.min(100, t.rev/mx*100);
+    var mix = t.new+t.rpt;
+    var np = mix > 0 ? Math.round(t.new/mix*100) : 0;
+    var cbcol = t.cb>=5?'var(--rd)':t.cb>=3?'var(--yw)':'var(--tx2)';
+    return '<tr>'+
+      '<td style="color:var(--tx3);font-size:11px">'+(i+1)+'</td>'+
+      '<td><div class="tn" data-tech="'+t.n+'">' + t.n + '</div><div class="tb">'+t.bu+'</div></td>'+
+      '<td><div class="mb"><div class="mbg"><div class="mbf" style="width:'+bp+'%;background:'+ccol(t.conv)+'"></div></div><span style="font-size:12px">'+fmtN(t.rev)+'</span></div></td>'+
+      '<td style="font-size:12px">'+fmtFull(t.avg)+'</td>'+
+      '<td style="font-size:12px;font-weight:600;color:'+ccol(t.conv)+'">'+t.conv+'%</td>'+
+      '<td style="font-size:12px">'+t.jobs+'</td>'+
+      '<td style="font-size:12px;color:var(--tx2)">'+t.opps+'</td>'+
+      '<td><span style="font-size:12px;color:var(--gr)">'+t.new+'</span><span style="font-size:10px;color:var(--tx3)"> '+np+'%</span></td>'+
+      '<td style="font-size:12px;color:var(--bl)">'+t.rpt+'</td>'+
+      '<td style="font-size:12px;font-weight:600;color:'+cbcol+'">'+t.cb+'</td>'+
+      '<td style="font-size:12px;color:var(--tx2)">'+t.topZip+'</td>'+
+      '<td><span class="badge '+st.c+'">'+st.l+'</span></td>'+
+    '</tr>';
+  }).join('');
+}
+
+// ============ TRENDS ============
+var curTrMode = 'line';
+
+document.addEventListener('DOMContentLoaded', function() {
+  var btnLine = document.getElementById('btn-line');
+  var btnBar  = document.getElementById('btn-bar');
+  if(btnLine) btnLine.addEventListener('click', function() {
+    curTrMode = 'line';
+    btnLine.classList.add('on'); btnBar.classList.remove('on');
+    renderTrends();
+  });
+  if(btnBar) btnBar.addEventListener('click', function() {
+    curTrMode = 'bar';
+    btnBar.classList.add('on'); btnLine.classList.remove('on');
+    renderTrends();
+  });
+});
+
+function renderTrends() {
+  var d = curTBU === 'all' ? TD.slice() : TD.filter(function(t){return t.bu.indexOf(curTBU)>=0;});
+  d.sort(function(a,b){return b.rev-a.rev;});
+
+  // Determine week range for current date selection
+  var wRange = WEEK_RANGE_MAP[curRange] || [0,14];
+  var wStart = wRange[0], wEnd = wRange[1];
+  var labels = WEEK_LABELS.slice(wStart, wEnd);
+  var COLS = ['#4a9eff','#3ab870','#e8601e','#f0b429','#9b72e8','#e84040','#2dd4bf','#fb923c','#a78bfa','#34d399','#60a5fa','#f472b6'];
+
+  document.getElementById('tr-title').textContent = curTrMode === 'line'
+    ? 'Weekly revenue trend — ' + labels.length + ' weeks'
+    : 'Revenue by tech — current range';
+  document.getElementById('tr-sub').textContent = labels[0] + ' – ' + labels[labels.length-1] + ', 2026 · verified revenue';
+
+  destroyChart('ctr');
+
+  if(curTrMode === 'line') {
+    // Line chart — weekly trend per tech
+    var top10 = d.slice(0,10);
+    CH.ctr = new Chart(document.getElementById('ctr').getContext('2d'),{
+      type:'line',
+      data:{
+        labels:labels,
+        datasets: top10.map(function(t,i){
+          var wks = (WEEKLY[t.n] || Array(14).fill(0)).slice(wStart, wEnd);
+          return {
+            label: t.n.split(' ').pop(),
+            data: wks,
+            borderColor: COLS[i % COLS.length],
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            tension: 0.3
+          };
+        })
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:true,labels:{color:'#6b6860',font:{size:11},boxWidth:10,padding:10}},
+          tooltip:{callbacks:{label:function(i){return i.dataset.label+': $'+i.raw.toLocaleString();}}}
+        },
+        scales:{
+          x:{ticks:{color:'#9a9690',font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},
+          y:{ticks:{color:'#9a9690',font:{size:10},callback:function(v){return '$'+(v/1000).toFixed(0)+'K';}},grid:{color:'rgba(0,0,0,0.05)'}}
+        }
+      }
+    });
+  } else {
+    // Bar chart — total revenue per tech for range
+    CH.ctr = new Chart(document.getElementById('ctr').getContext('2d'),{
+      type:'bar',
+      data:{
+        labels:d.map(function(t){return t.n.split(' ').pop();}),
+        datasets:[{label:'Revenue',data:d.map(function(t){return t.rev;}),backgroundColor:d.map(function(t){return ccol(t.conv);}),borderRadius:4,borderSkipped:false}]
+      },
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(i){return '$'+i.raw.toLocaleString();}}}},
+        scales:{x:{ticks:{color:'#9a9690',font:{size:10},callback:function(v){return '$'+(v/1000).toFixed(0)+'K';}},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#6b6860',font:{size:11}},grid:{display:false}}}
+      }
+    });
+  }
+
+  // Weekly table — show weeks in current range
+  var hdr = '<th style="min-width:140px">Tech</th>';
+  for(var wi=wStart;wi<wEnd;wi++) hdr += '<th>'+WEEK_LABELS[wi]+'</th>';
+  hdr += '<th>Total</th>';
+  document.getElementById('tr-week-hdr').innerHTML = hdr;
+
+  document.getElementById('tr-table-sub').textContent =
+    labels.length + ' weeks · green = $20K+ · yellow = $10-20K';
+
+  document.getElementById('tr-week-body').innerHTML = d.map(function(t){
+    var wks = (WEEKLY[t.n] || Array(14).fill(0)).slice(wStart, wEnd);
+    var rowTotal = wks.reduce(function(s,v){return s+v;},0);
+    var cells = wks.map(function(v){
+      var col = v>=20000?'var(--gr)':v>=10000?'var(--yw)':'var(--tx2)';
+      return '<td style="font-size:11px;color:'+col+';white-space:nowrap">'+(v>0?fmtN(v):'—')+'</td>';
+    }).join('');
+    return '<tr>'+
+      '<td><div class="tn" style="font-size:12px">'+t.n+'</div><div class="tb">'+t.bu+'</div></td>'+
+      cells+
+      '<td style="font-size:12px;font-weight:600">'+fmtN(rowTotal)+'</td>'+
+    '</tr>';
+  }).join('');
+
+  // Rankings table
+  document.getElementById('trbody').innerHTML = d.map(function(t){
+    var st = statusOf(t);
+    var cbcol = t.cb>=5?'var(--rd)':t.cb>=3?'var(--yw)':'var(--tx2)';
+    return '<tr>'+
+      '<td><div class="tn" style="font-size:12px">'+t.n+'</div><div class="tb">'+t.bu+'</div></td>'+
+      '<td style="font-size:12px;font-weight:500">'+fmtN(t.rev)+'</td>'+
+      '<td style="font-size:12px">'+fmtFull(t.avg)+'</td>'+
+      '<td style="font-size:12px;font-weight:600;color:'+ccol(t.conv)+'">'+t.conv+'%</td>'+
+      '<td style="font-size:12px">'+t.jobs+'</td>'+
+      '<td style="font-size:12px;color:var(--gr)">'+t.new+'</td>'+
+      '<td style="font-size:12px;color:var(--bl)">'+t.rpt+'</td>'+
+      '<td style="font-size:12px;font-weight:600;color:'+cbcol+'">'+t.cb+'</td>'+
+      '<td><span class="badge '+st.c+'">'+st.l+'</span></td>'+
+    '</tr>';
+  }).join('');
+}
+
+// ============ ZIPS ============
+function renderZips() {
+  var d = Z.slice();
+  var ZSRT = {
+    rev:function(a,b){return b.rev-a.rev;},
+    visits:function(a,b){return b.v-a.v;},
+    avg:function(a,b){return b.avg-a.avg;},
+    new:function(a,b){return b.new-a.new;},
+    rpt:function(a,b){return b.rpt-a.rpt;}
+  };
+  d.sort(ZSRT[curZF] || ZSRT.rev);
+  document.getElementById('zcount').textContent = d.length + ' zip codes';
+  document.getElementById('zgrid').innerHTML = d.slice(0,9).map(function(z) {
+    var tot = z.new+z.rpt;
+    var np = tot ? Math.round(z.new/tot*100) : 0;
+    var rp = tot ? Math.round(z.rpt/tot*100) : 0;
+    var ac = z.avg>=1000?'var(--gr)':z.avg>=850?'var(--tx)':'var(--tx2)';
+    return '<div class="zc">'+
+      '<div class="zz">'+z.z+'</div>'+
+      '<div style="font-size:13px;font-weight:600;color:var(--ac);margin-top:2px">'+fmtN(z.rev)+' est.</div>'+
+      '<div style="font-size:11px;color:var(--tx2);margin-top:2px">'+z.v+' jobs · <span style="color:'+ac+';font-weight:500">'+fmtFull(z.avg)+' avg/job</span></div>'+
+      '<div class="zp">'+
+        '<span class="zpl" style="background:rgba(58,184,112,.15);color:var(--gr)">'+np+'% new</span>'+
+        '<span class="zpl" style="background:rgba(74,158,255,.15);color:var(--bl)">'+rp+'% repeat</span>'+
+      '</div>'+
+      '<div class="ztch">'+z.techs.map(function(t,i){
+        return '<div style="display:flex;justify-content:space-between;font-size:11px;color:'+(i===0?'var(--tx)':'var(--tx3)')+';margin-bottom:3px">'+
+          '<span>'+['🥇','🥈','🥉'][i]+' '+t[0].split(' ').pop()+' ('+t[1]+'j)</span>'+
+          '<span>'+fmtN(t[2])+'</span></div>';
+      }).join('')+'</div>'+
+    '</div>';
+  }).join('');
+  var t15 = d.slice(0,15);
+  destroyChart('czr');
+  CH.czr = new Chart(document.getElementById('czr').getContext('2d'),{
+    type:'bar',
+    data:{labels:t15.map(function(z){return z.z;}),datasets:[{label:'Est Rev',data:t15.map(function(z){return z.rev;}),backgroundColor:t15.map(function(z){return z.avg>=1000?'#3ab870':z.avg>=850?'#4a9eff':'#5a5754';}),borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(i){return 'Est $'+i.raw.toLocaleString()+' · avg '+fmtFull(t15[i.dataIndex].avg)+'/job';}} }},
+      scales:{x:{ticks:{color:'#9a9690',font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{color:'#9a9690',font:{size:10},callback:function(v){return '$'+(v/1000).toFixed(0)+'K';}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+  });
+  destroyChart('czm');
+  CH.czm = new Chart(document.getElementById('czm').getContext('2d'),{
+    type:'bar',
+    data:{labels:t15.map(function(z){return z.z;}),datasets:[
+      {label:'New',data:t15.map(function(z){return z.new;}),backgroundColor:'#3ab870',borderRadius:0,borderSkipped:false},
+      {label:'Repeat',data:t15.map(function(z){return z.rpt;}),backgroundColor:'#4a9eff',borderRadius:4,borderSkipped:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#6b6860',font:{size:11},boxWidth:10,padding:10}}},
+      scales:{x:{stacked:true,ticks:{color:'#9a9690',font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},y:{stacked:true,ticks:{color:'#9a9690',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+  });
+  document.getElementById('ztbody').innerHTML = d.map(function(z) {
+    var ac = z.avg>=1000?'var(--gr)':z.avg>=850?'var(--tx)':'var(--tx2)';
+    return '<tr>'+
+      '<td style="font-size:13px;font-weight:600">'+z.z+'</td>'+
+      '<td style="font-size:12px;font-weight:500;color:var(--ac)">'+fmtN(z.rev)+'</td>'+
+      '<td style="font-size:12px">'+z.v+'</td>'+
+      '<td style="font-size:12px;font-weight:500;color:'+ac+'">'+fmtFull(z.avg)+'</td>'+
+      '<td style="font-size:12px;color:var(--gr)">'+z.new+'</td>'+
+      '<td style="font-size:12px;color:var(--bl)">'+z.rpt+'</td>'+
+      z.techs.map(function(t,i){return '<td style="font-size:11px;color:'+(i===0?'var(--tx)':'var(--tx2)')+'">'+t[0]+'<br><span style="color:var(--tx3)">'+t[1]+' jobs · '+fmtN(t[2])+'</span></td>';}).join('')+
+    '</tr>';
+  }).join('');
+}
+
+// ============ CHARTS ============
+function renderCharts() {
+  var s = TD.slice().sort(function(a,b){return b.rev-a.rev;});
+  var ln = s.map(function(t){return t.n.split(' ').pop();});
+  destroyChart('crev');
+  CH.crev = new Chart(document.getElementById('crev').getContext('2d'),{
+    type:'bar',
+    data:{labels:ln,datasets:[{label:'Revenue',data:s.map(function(t){return t.rev;}),backgroundColor:s.map(function(t){return ccol(t.conv);}),borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(i){return '$'+i.raw.toLocaleString();}}}},
+      scales:{x:{ticks:{color:'#9a9690',font:{size:10},callback:function(v){return '$'+(v/1000).toFixed(0)+'K';}},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#6b6860',font:{size:11}},grid:{display:false}}}}
+  });
+  var sa = TD.slice().filter(function(t){return t.avg>0;}).sort(function(a,b){return b.avg-a.avg;});
+  destroyChart('cavg');
+  CH.cavg = new Chart(document.getElementById('cavg').getContext('2d'),{
+    type:'bar',
+    data:{labels:sa.map(function(t){return t.n.split(' ').pop();}),datasets:[{label:'Avg',data:sa.map(function(t){return t.avg;}),backgroundColor:'#4a9eff',borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#9a9690',font:{size:9}},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{color:'#9a9690',font:{size:9},callback:function(v){return '$'+v.toLocaleString();}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+  });
+  var sc = TD.slice().sort(function(a,b){return b.conv-a.conv;});
+  destroyChart('cconv');
+  CH.cconv = new Chart(document.getElementById('cconv').getContext('2d'),{
+    type:'bar',
+    data:{labels:sc.map(function(t){return t.n.split(' ').pop();}),datasets:[{label:'Conv%',data:sc.map(function(t){return t.conv;}),backgroundColor:sc.map(function(t){return ccol(t.conv);}),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#9a9690',font:{size:9}},grid:{color:'rgba(0,0,0,0.04)'}},y:{min:30,ticks:{color:'#9a9690',font:{size:9},callback:function(v){return v+'%';}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+  });
+  var scb = TD.slice().sort(function(a,b){return b.cb-a.cb;});
+  destroyChart('ccb');
+  CH.ccb = new Chart(document.getElementById('ccb').getContext('2d'),{
+    type:'bar',
+    data:{labels:scb.map(function(t){return t.n.split(' ').pop();}),datasets:[{label:'CB',data:scb.map(function(t){return t.cb;}),backgroundColor:scb.map(function(t){return t.cb>=5?'#e84040':t.cb>=3?'#f0b429':'#5a5754';}),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#9a9690',font:{size:9}},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{color:'#9a9690',font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+  });
+  var sm = TD.slice().sort(function(a,b){return b.rev-a.rev;});
+  destroyChart('cmix');
+  CH.cmix = new Chart(document.getElementById('cmix').getContext('2d'),{
+    type:'bar',
+    data:{labels:sm.map(function(t){return t.n.split(' ').pop();}),datasets:[
+      {label:'New',data:sm.map(function(t){return t.new;}),backgroundColor:'#3ab870',borderRadius:0,borderSkipped:false},
+      {label:'Repeat',data:sm.map(function(t){return t.rpt;}),backgroundColor:'#4a9eff',borderRadius:3,borderSkipped:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#6b6860',font:{size:10},boxWidth:10,padding:10}}},
+      scales:{x:{stacked:true,ticks:{color:'#9a9690',font:{size:9}},grid:{color:'rgba(0,0,0,0.04)'}},y:{stacked:true,ticks:{color:'#9a9690',font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+  });
+}
+
+// ============ MOMENTUM ============
+var RAMPING_TECHS = {"Tommy Gatlin":true,"Jake Wooten":true,"Anthony Phillips":true};
+
+function renderMo() {
+  var teamTotal = TD.reduce(function(s,t){return s+t.rev;},0);
+  var teamAvg   = teamTotal / TD.length;
+
+  // Short ranges (WKTD, 1wk, 2wk, MTD) — no period splits, just rank by revenue vs team avg
+  var shortRanges = {wktd:true, '7':true, '14':true, mtd:true};
+  var isShort = !!shortRanges[curRange];
+
+  var data = TD.map(function(t) {
+    var sp = SPLITS[t.n] || [0.333,0.333,0.333];
+    var m1, m2, m3, trendPct;
+    if(isShort) {
+      // For short ranges use TD.rev which already has correct verified override numbers
+      m1 = 0; m2 = 0; m3 = t.rev; // show verified period total in period 3 slot
+      trendPct = 0; // don't show trend for short ranges
+    } else {
+      m1 = Math.round(t.rev * sp[0]);
+      m2 = Math.round(t.rev * sp[1]);
+      m3 = Math.round(t.rev * sp[2]);
+      trendPct = m1 > 0 ? (m3-m1)/m1*100 : 0;
+    }
+    var revScore  = teamAvg > 0 ? (t.rev - teamAvg) / teamAvg * 100 : 0;
+    var score     = isShort
+      ? Math.round(revScore)  // short range: rank purely by revenue vs team avg
+      : Math.round((trendPct * 0.35) + (revScore * 0.65));
+    var isRamping = !!RAMPING_TECHS[t.n];
+    return {n:t.n, bu:t.bu, m1:m1, m2:m2, m3:m3, rev:t.rev,
+            trendPct:Math.round(trendPct), score:score, isRamping:isRamping, isShort:isShort};
+  });
+
+  var rising  = data.filter(function(t){return !t.isRamping && t.score>=20;}).sort(function(a,b){return b.score-a.score;});
+  var steady  = data.filter(function(t){return !t.isRamping && t.score>=-10&&t.score<20;}).sort(function(a,b){return b.rev-a.rev;});
+  var falling = data.filter(function(t){return !t.isRamping && t.score<-10;}).sort(function(a,b){return a.score-b.score;});
+  var ramping = data.filter(function(t){return t.isRamping;}).sort(function(a,b){return b.rev-a.rev;});
+
+  var rangeNote = isShort ? ' · ranked by revenue vs team average for this period' : ' · scored by trend + volume';
+  document.getElementById('ms-rising').textContent  = '📈 Rising — building momentum ('+rising.length+')'+rangeNote;
+  document.getElementById('ms-steady').textContent  = '➡️ Steady — consistent performers ('+steady.length+')';
+  document.getElementById('ms-falling').textContent = '📉 Falling — need attention now ('+falling.length+')';
+
+  function moRow(t) {
+    var sc = t.score;
+    var tc = sc>=20?'var(--gr)':sc>=-10?'var(--bl)':sc>=-35?'var(--yw)':'var(--rd)';
+    var ar = sc>=20?'📈':sc>=-10?'➡️':sc>=-35?'⚠️':'📉';
+    var m3c = t.m3>t.m1?'var(--gr)':t.m1>0&&t.m3<t.m1?'var(--rd)':'var(--tx)';
+    // For short ranges show revenue prominently, hide period columns
+    var periodCols = t.isShort
+      ? '<td colspan="3" style="font-size:13px;font-weight:600;color:var(--ac);text-align:center">'+fmtN(t.rev)+'<span style="font-size:10px;color:var(--tx3);margin-left:6px">period total</span></td>'
+      : '<td style="font-size:12px;color:var(--tx2)">'+(t.m1>0?fmtN(t.m1):'—')+'</td>'+
+        '<td style="font-size:12px;color:var(--tx2)">'+(t.m2>0?fmtN(t.m2):'—')+'</td>'+
+        '<td style="font-size:12px;font-weight:600;color:'+m3c+'">'+(t.m3>0?fmtN(t.m3):'—')+'</td>';
+    var scoreCol = t.isShort
+      ? '<td style="font-size:11px;color:var(--tx3)">Revenue rank</td>'
+      : '<td style="font-size:12px;font-weight:700;color:'+tc+'">'+ar+' '+(sc>0?'+':'')+sc+'</td>';
+    return '<tr>'+
+      '<td><div class="tn">'+t.n+'</div></td>'+
+      '<td><div class="tb" style="font-size:12px">'+t.bu+'</div></td>'+
+      periodCols+
+      '<td style="font-size:12px;font-weight:500">'+fmtN(t.rev)+'</td>'+
+      scoreCol+
+      '<td style="font-size:11px;color:var(--tx2);max-width:180px">'+(ACTIONS[t.n]||'—')+'</td>'+
+    '</tr>';
+  }
+
+  var empty = '<tr><td colspan="8" style="color:var(--tx3);font-size:12px;padding:14px;text-align:center">None in this category for selected range</td></tr>';
+  document.getElementById('mob-rising').innerHTML  = rising.length  ? rising.map(moRow).join('')  : empty;
+  document.getElementById('mob-steady').innerHTML  = steady.length  ? steady.map(moRow).join('')  : empty;
+  document.getElementById('mob-falling').innerHTML = falling.length ? falling.map(moRow).join('') : empty;
+  // Ramping section
+  var rampEl = document.getElementById('mob-ramping');
+  if(rampEl) rampEl.innerHTML = ramping.length ? ramping.map(moRow).join('') : empty;
+  var rampSec = document.getElementById('ms-ramping');
+  if(rampSec) rampSec.textContent = '🆕 Ramping — new to full volume ('+ramping.length+')';
+
+  var top10 = data.slice().sort(function(a,b){return b.rev-a.rev;}).slice(0,10);
+  destroyChart('cmo');
+  CH.cmo = new Chart(document.getElementById('cmo').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:top10.map(function(t){return t.n.split(' ').pop();}),
+      datasets:[
+        {label:'Period 1',data:top10.map(function(t){return t.m1;}),backgroundColor:'rgba(74,158,255,0.35)',borderRadius:3,borderSkipped:false},
+        {label:'Period 2',data:top10.map(function(t){return t.m2;}),backgroundColor:'rgba(74,158,255,0.60)',borderRadius:3,borderSkipped:false},
+        {label:'Period 3',data:top10.map(function(t){return t.m3;}),backgroundColor:'#4a9eff',borderRadius:3,borderSkipped:false}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#6b6860',font:{size:11},boxWidth:10,padding:10}},tooltip:{callbacks:{label:function(i){return '$'+i.raw.toLocaleString();}}}},
+      scales:{x:{ticks:{color:'#6b6860',font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{color:'#9a9690',font:{size:10},callback:function(v){return '$'+(v/1000).toFixed(0)+'K';}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+  });
+}
+
+
+document.querySelectorAll('.fbtn[data-prbu]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.fbtn[data-prbu]').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');
+    curPRBU = btn.getAttribute('data-prbu');
+    renderPr();
+  });
+});
+
+
+
+// ============ AI CHAT ============
+var chatHistory = [];
+
+function buildContext() {
+  var lines = [];
+  lines.push("You are a garage door service business analyst for Precision Garage Door. Answer questions directly and specifically using the data. Be concise and actionable. Use $ amounts and % from the data.");
+  lines.push("COMPANY: Precision Garage Door — 3 markets: Knoxville TN, Chattanooga TN, Albany NY. Service only, no installs. Min ticket ~$140. Team avg ticket ~$900-1,100.");
+  lines.push("CURRENT RANGE: " + document.getElementById('rlabel').textContent);
+  lines.push("\nTECH DATA (current range — sorted by revenue):");
+  var sorted = TD.slice().sort(function(a,b){return b.rev-a.rev;});
+  sorted.forEach(function(t,i){
+    var mix = t.new+t.rpt;
+    var np = mix>0?Math.round(t.new/mix*100):0;
+    lines.push((i+1)+". "+t.n+" ("+t.bu+") Rev:$"+t.rev.toLocaleString()+" Avg:$"+t.avg+" Conv:"+t.conv+"% Jobs:"+t.jobs+" Opps:"+t.opps+" New:"+t.new+"("+np+"%) Repeat:"+t.rpt+" CB:"+t.cb+" TopZip:"+t.topZip);
+  });
+  lines.push("\nWKTD (Jul 20-23) top performers:");
+  var wktdOv = OVERRIDES['wktd'];
+  Object.keys(wktdOv).map(function(k){return {n:k,d:wktdOv[k]};}).filter(function(x){return x.d.rev>0;}).sort(function(a,b){return b.d.rev-a.d.rev;}).slice(0,10).forEach(function(x){
+    lines.push("  "+x.n+": $"+x.d.rev.toLocaleString()+" avg $"+x.d.avg+" conv "+x.d.conv+"% jobs "+x.d.jobs);
+  });
+  lines.push("\nNEXT WEEK top picks:");
+  PR_DATA.slice().sort(function(a,b){return b.score-a.score;}).slice(0,5).forEach(function(t){
+    lines.push("  "+t.n+": projected $"+t.proj.toLocaleString()+" score "+t.score+" "+t.conf+" confidence");
+  });
+  return lines.join("\n");
+}
+
+function addMsg(text, role) {
+  var win = document.getElementById('chat-window');
+  if(win.children.length===1 && win.children[0].style.textAlign==='center') win.innerHTML='';
+  var div = document.createElement('div');
+  div.className = role==='user'?'msg-user':'msg-ai';
+  div.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+  win.appendChild(div);
+  win.scrollTop = win.scrollHeight;
+}
+
+function addTyping() {
+  var win = document.getElementById('chat-window');
+  var div = document.createElement('div');
+  div.className='msg-typing'; div.id='typing-ind'; div.textContent='Claude is thinking...';
+  win.appendChild(div); win.scrollTop=win.scrollHeight;
+}
+function removeTyping(){var el=document.getElementById('typing-ind');if(el)el.remove();}
+
+function sendSugg(btn){document.getElementById('chat-input').value=btn.textContent;sendChat();}
+
+async function sendChat() {
+  var input = document.getElementById('chat-input');
+  var msg = input.value.trim();
+  if(!msg) return;
+  input.value=''; input.style.height='48px';
+  document.getElementById('send-btn').disabled=true;
+  addMsg(msg,'user');
+  addTyping();
+  chatHistory.push({role:'user',content:msg});
+  try {
+    var res = await fetch('/api/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system: buildContext(),
+        messages: chatHistory
+      })
+    });
+    var data = await res.json();
+    var reply = data.content&&data.content[0]?data.content[0].text:'Sorry, try again.';
+    removeTyping();
+    addMsg(reply,'ai');
+    chatHistory.push({role:'assistant',content:reply});
+    if(chatHistory.length>20) chatHistory=chatHistory.slice(-20);
+  } catch(err) {
+    removeTyping();
+    addMsg('Server not running. Start the server with: node server.js','ai');
+  }
+  document.getElementById('send-btn').disabled=false;
+}
+
+// ============ INIT ============
+document.addEventListener('click', function(e) {
+  var el = e.target;
+  while(el && el !== document.body) {
+    if(el.getAttribute && el.getAttribute('data-tech')) {
+      openDrill(el.getAttribute('data-tech'));
+      return;
+    }
+    el = el.parentElement;
+  }
+});
+renderScore();
+
+</script>
+</body>
+</html>
