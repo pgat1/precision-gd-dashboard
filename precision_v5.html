@@ -1829,11 +1829,11 @@ function runDispatcher() {
     // Top zip bonus
     if(t.topZip === zip) score += 15;
 
-    // Conversion rate
-    score += (t.conv - 70) * 0.5;
+    // Avg ticket — primary ranking factor
+    score += (t.avg - 600) * 0.05;
 
-    // Avg ticket
-    score += (t.avg - 600) * 0.01;
+    // Conversion rate — secondary
+    score += (t.conv - 70) * 0.2;
 
     // Job type scoring
     var tot = t.new + t.rpt;
