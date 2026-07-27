@@ -214,9 +214,8 @@ tr:hover td { background: var(--bg); }
   </div>
   <div class="nav">
     <div class="nt on" data-view="sc" onclick="document.getElementById('dbar').style.display=''">Scorecard</div>
-    <div class="nt" data-view="tr" onclick="document.getElementById('dbar').style.display=''">Trends</div>
+    <div class="nt" data-view="bi" onclick="document.getElementById('dbar').style.display=''">Tech Bios</div>
     <div class="nt" data-view="zi" onclick="document.getElementById('dbar').style.display=''">Zip Intel</div>
-    <div class="nt" data-view="ch" onclick="document.getElementById('dbar').style.display=''">Charts</div>
     <div class="nt" data-view="mo" onclick="document.getElementById('dbar').style.display=''">Momentum</div>
     <div class="nt" data-view="pr" onclick="document.getElementById('dbar').style.display=''">Next Week</div>
     <div class="nt" data-view="dp" onclick="document.getElementById('dbar').style.display='none'">📋 Dispatch</div>
@@ -284,32 +283,20 @@ tr:hover td { background: var(--bg); }
 </div>
 
 <!-- TRENDS -->
-<div id="view-tr" class="view hidden">
-  <div style="background:var(--s1);border-radius:var(--r);border:1px solid var(--bdr);overflow:hidden;margin-bottom:14px">
-    <div style="padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:13px;font-weight:600;color:var(--tx)" id="tr-title">Weekly revenue</div>
-        <div style="font-size:11px;color:var(--tx3);margin-top:2px" id="tr-sub"></div>
-      </div>
-      <div style="display:flex;gap:4px">
-        <button id="btn-line" onclick="curTrMode='line';renderTrends()" style="padding:4px 12px;border-radius:6px;border:1px solid var(--bdr);background:var(--tx);color:#fff;font-size:11px;cursor:pointer;font-weight:500">Line</button>
-        <button id="btn-bar" onclick="curTrMode='bar';renderTrends()" style="padding:4px 12px;border-radius:6px;border:1px solid var(--bdr);background:var(--s1);color:var(--tx2);font-size:11px;cursor:pointer;font-weight:500">Bar</button>
-      </div>
+<div id="view-bi" class="view hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-size:18px;font-weight:700;color:var(--tx)">Tech bios</div>
+      <div style="font-size:12px;color:var(--tx3);margin-top:2px">Detailed performance profile for each technician</div>
     </div>
-    <div style="padding:16px 18px;position:relative;height:280px"><canvas id="ctr"></canvas></div>
+    <div class="bu-filter">
+      <div class="bu-btn active" data-bio-bu="all">All markets</div>
+      <div class="bu-btn" data-bio-bu="Knoxville">Knoxville</div>
+      <div class="bu-btn" data-bio-bu="Chattanooga">Chattanooga</div>
+      <div class="bu-btn" data-bio-bu="Albany">Albany</div>
+    </div>
   </div>
-  <div style="background:var(--s1);border-radius:var(--r);border:1px solid var(--bdr);overflow:hidden">
-    <div style="padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--bdr)">
-      <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3)" id="tr-table-sub">Rankings</span>
-    </div>
-    <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse">
-        <thead><tr id="tr-week-hdr" style="background:var(--s2)"></tr></thead>
-        <tbody id="tr-week-body"></tbody>
-      </table>
-    </div>
-    <div style="display:none"><div id="trbody"></div></div>
-  </div>
+  <div id="bio-grid" style="display:flex;flex-direction:column;gap:12px"></div>
 </div>
 
 <div id="view-zi" class="view hidden">
@@ -342,32 +329,6 @@ tr:hover td { background: var(--bg); }
   <div style="display:none"><canvas id="czr"></canvas><canvas id="czm"></canvas></div>
 </div>
 
-<div id="view-ch" class="hidden">
-  <div class="card">
-    <div class="card-hdr"><span class="card-title">Revenue by tech</span><span class="card-sub">Color = conversion rate</span></div>
-    <div class="card-body"><div class="chart-wrap chart-h440"><canvas id="crev" role="img" aria-label="Revenue by tech"></canvas></div></div>
-  </div>
-  <div class="two-col">
-    <div class="card">
-      <div class="card-hdr"><span class="card-title">Avg ticket</span></div>
-      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="cavg" role="img" aria-label="Avg ticket"></canvas></div></div>
-    </div>
-    <div class="card">
-      <div class="card-hdr"><span class="card-title">Conversion rate</span></div>
-      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="cconv" role="img" aria-label="Conversion"></canvas></div></div>
-    </div>
-    <div class="card">
-      <div class="card-hdr"><span class="card-title">Callbacks</span></div>
-      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="ccb" role="img" aria-label="Callbacks"></canvas></div></div>
-    </div>
-    <div class="card">
-      <div class="card-hdr"><span class="card-title">New vs repeat</span></div>
-      <div class="card-body"><div class="chart-wrap chart-h300"><canvas id="cmix" role="img" aria-label="New vs repeat"></canvas></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- MOMENTUM -->
 <div id="view-mo" class="hidden">
   <div class="note">Revenue split into 3 equal periods · Trend = Period 3 vs Period 1 · Updates with date range</div>
   <div class="mo-section">
@@ -1256,8 +1217,10 @@ document.querySelectorAll('.nt[data-view]').forEach(function(tab) {
     var db = document.getElementById('dbar');
     if(db) db.style.display = curView === 'ai' ? 'none' : '';
     if(curView === 'zi') renderZips();
+    if(curView === 'bi') renderBio();
     if(curView === 'ch') renderCharts();
     if(curView === 'mo') renderMo();
+  if(curView === 'bi') renderBio();
     if(curView === 'tr') renderTrends();
     if(curView === 'pr') renderPr();
     // Hide date bar on Next Week tab - it's always forward-looking
@@ -1303,8 +1266,10 @@ function renderAll() {
   renderScore();
   if(curView === 'tr') renderTrends();
   if(curView === 'zi') renderZips();
+    if(curView === 'bi') renderBio();
   if(curView === 'ch') renderCharts();
   if(curView === 'mo') renderMo();
+  if(curView === 'bi') renderBio();
   if(curView === 'pr') renderPr();
 }
 
@@ -1726,7 +1691,7 @@ function buildContext() {
   var lines = [];
   lines.push("You are an elite field service business analyst for Precision Garage Door. You think like an operator, not a report reader. Your job is to find hidden problems — techs who look fine on the surface but are leaking money, losing opportunities, or declining quietly. Be direct, specific, and actionable. Never state the obvious. Dig deeper.");
   lines.push("COMPANY: Precision Garage Door — 3 markets: Knoxville TN, Chattanooga TN, Albany NY. Service only, no installs. Min ticket ~$140. Team avg ticket ~$950-1,100. Conversion below 80% is a red flag. Avg ticket below $700 means upsell failure. A tech can have high revenue but still be underperforming relative to their opportunity volume.");
-  lines.push("ANALYSIS FRAMEWORK — when asked about problems or underperformers, go beyond the obvious. Look for: (1) High opps but low conversion = closing problem. (2) High jobs but low avg ticket = upsell failure. (3) Good recent numbers but declining trend = momentum issue. (4) High volume market but low revenue = dispatch mismatch. (5) Conversion dropped vs prior range = something changed. (6) Large gap between opp job avg and total job avg = leaving money on table. (7) Techs with lots of repeat customers but low avg ticket = not upselling loyal base. Always compare current range to longer ranges to spot trends.");
+  lines.push("ANALYSIS FRAMEWORK — when asked about problems or underperformers, go beyond the obvious. Look for: (1) High opps but low conversion = closing problem — this is the biggest revenue leak. (2) High jobs but low avg ticket = upsell failure, not presenting options. (3) Good recent numbers but declining trend = momentum issue, something changed. (4) High volume market but low revenue = dispatch mismatch or low avg ticket. (5) Conversion dropped vs prior range = red flag, dig in. (6) Large gap between opp job avg and total job avg = consistently leaving money on table. (7) Tech seeing lots of opps but few converted = confidence or presentation issue. IMPORTANT: Do NOT over-analyze the new vs repeat customer split. Repeat simply means the customer has called before — could be 5 years ago. It is NOT a loyalty or retention metric within this window. Focus analysis on conversion rate, avg ticket, callback rate, and revenue trends instead.");
   lines.push("CURRENT RANGE: " + document.getElementById('rlabel').textContent);
   lines.push("\nTECH DATA (current range — sorted by revenue):");
   var sorted = TD.slice().sort(function(a,b){return b.rev-a.rev;});
@@ -1899,6 +1864,102 @@ function runDispatcher() {
       '</div>';
     }).join('');
 }
+
+// ============ TECH BIOS ============
+var curBioBU = 'all';
+
+// Detailed bio sentences per tech
+var TECH_BIO = {
+  "Patrick Stockton":   "Patrick is the undisputed #1 on the team and it isn't close. At $1,692 avg ticket he's converting premium jobs at a rate no one else matches. His 91% conversion over 90 days tells you he walks in and closes — consistently. The only question is whether dispatch is protecting his schedule and routing him the right calls.",
+  "Hunter Bridges":     "Hunter is the model of consistency in Knoxville. 92% conversion, clean callback record, and strong avg ticket. He doesn't have big swings — he just performs every single time. If he's having a slow week it's a scheduling issue, not a performance issue. Feed him calls and get out of the way.",
+  "Cole Warrington":    "Cole is Albany's engine and he's been carrying that market. High volume, solid conversion, but his avg ticket has room to grow. He's leaving money on upsell — the opps are there. A focused coaching session on presenting options could push him significantly higher.",
+  "Tony Parson":        "Tony is Chattanooga's most reliable closer. 93-100% conversion is elite and he handles high volume without dropping off. He doesn't need motivation, he needs call volume. If Tony's numbers are down it means the phone isn't ringing enough in his market, not that he's struggling.",
+  "Thomas Wright":      "Thomas has the highest avg ticket in Knoxville when healthy. His numbers show real quality — customers trust him and spend with him. Current shoulder injury means no motor jobs but he should still be getting premium non-motor calls. Don't bench him, just route smart.",
+  "Jean-Paul Collins (JP)": "JP is the most talented inconsistent tech on the team. When he's locked in he's top-3 material — $1,070 avg ticket and strong conversion. But his WKTD numbers show big swings. Something affects his consistency and it's worth a direct conversation to find out what.",
+  "Scott Hewens":       "Scott has the best conversion rate on the team at 97-98% — that means he almost never walks away without a sale. His issue isn't skill, it's volume. He's been underutilized in Chattanooga. Stack his board and watch his numbers climb fast.",
+  "Zack Maki":          "Zack is a high-volume Albany closer with 93% conversion. His callback count is the highest concern — 24 over 90 days warrants a quality check. The revenue is there but if the callbacks aren't addressed they'll catch up. Strong performer who needs a quality conversation.",
+  "Trevor Perry":       "Trevor has the cleanest callback record on the team at 2.29% — customers don't call back because he fixes it right the first time. His conversion dips on short ranges are the only red flag. When his conv drops below 70% in a given week something is off and worth checking in on.",
+  "Preston Stockton":   "Preston is steady in Knoxville and a strong repeat customer tech. His conversion can dip on shorter ranges — he has weeks where he leaves too many opps on the table. Coaching on closing momentum would help him be more consistent day to day.",
+  "James Wells":        "James is Albany's most reliable non-Cole performer. 92% conversion and a clean record. He doesn't get the recognition but he's putting up solid numbers consistently. Give him more call volume and watch him produce.",
+  "Derek Haynie":       "Derek was flagged early as a callback risk but the real data shows 5.26% — that's actually solid. He's a repeat customer specialist with 76 repeat jobs, meaning customers trust him and come back. His avg ticket is lower but he's a dependable volume tech in Knoxville.",
+  "Chris Pease":        "Chris is quietly solid in Knoxville. Good conversion, clean callbacks, consistent revenue. He doesn't pop off the dashboard but he never causes problems either. The kind of tech that makes a market work. Could benefit from upsell coaching to push his avg ticket higher.",
+  "Anthony Phillips":   "Anthony is one of the most efficient Chattanooga techs — 92% conversion and strong avg ticket. He's reliable and doesn't create drama. Worth routing premium Chattanooga calls his way, he'll close them.",
+  "Charlie Hobson":     "Charlie is consistent but flat. His avg ticket and conversion are both below where they should be for his experience level. He's not declining but he's not growing either. A focused coaching session on upsell and close rate could unlock a lot here.",
+  "Koleton Park":       "Koleton's avg ticket is the biggest gap on the team — $575 vs team avg of $1,000+. He's seeing plenty of opportunities but not converting them to revenue. This is a pricing and upsell coaching issue, not a laziness issue. Fix the presentation and his numbers will follow.",
+  "Anthony Hill":       "Anthony is Albany's conversion leader — 91% and reliable. His avg ticket is lower than his potential. His callback count of 18 is worth a quality conversation. Strong closer who needs to work on job quality and ticket size.",
+  "Tommy Gatlin":       "Tommy is ramping and showing exactly what you want to see — 90% conversion and above-average avg ticket. He's building momentum and needs consistent scheduling to keep it going. Protect his calendar.",
+  "Jake Wooten":        "Jake is a newer Chattanooga tech who's trending right. 90% conversion is strong for his experience level. Needs consistent volume to keep building. Watch his trajectory — he could develop into a top performer.",
+  "Maruf Kholnazarov":  "Maruf has very limited activity and the highest callback rate on the team at 15.79%. Both issues need attention separately — is he getting enough calls scheduled, and when he does go out, is the quality there? Needs a direct check-in soon.",
+  "Steven Houser":      "Steven is building in Albany but slowly. Low conversion and limited volume. He's not producing at a level that justifies a full schedule yet. Needs structured coaching and graduated call volume to develop properly."
+};
+
+function renderBio() {
+  var d = curBioBU === 'all' ? TD.slice() : TD.filter(function(t){return t.bu.indexOf(curBioBU)>=0;});
+  d.sort(function(a,b){return b.rev-a.rev;});
+
+  document.getElementById('bio-grid').innerHTML = d.map(function(t) {
+    var st = statusOf(t);
+    var stClass = st.l === 'HOT' ? 'var(--gr)' : st.l === 'STEADY' ? 'var(--tx2)' : st.l === 'SLOW' ? 'var(--yw)' : 'var(--rd)';
+    var stBg = st.l === 'HOT' ? 'var(--gr-bg)' : st.l === 'STEADY' ? 'var(--s2)' : st.l === 'SLOW' ? 'var(--yw-bg)' : 'var(--rd-bg)';
+    var cbcol = t.cb>=15?'var(--rd)':t.cb>=10?'var(--yw)':'var(--tx2)';
+    var convCol = ccol(t.conv);
+    var bio = TECH_BIO[t.n] || 'No bio available.';
+    var flag = TECH_FLAGS && TECH_FLAGS[t.n] ? TECH_FLAGS[t.n].note : null;
+
+    return '<div style="background:var(--s1);border-radius:var(--r);border:1px solid var(--bdr);overflow:hidden">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bdr)">' +
+        '<div style="display:flex;align-items:center;gap:14px">' +
+          '<div style="width:42px;height:42px;border-radius:50%;background:'+stBg+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:'+stClass+'">' +
+            t.n.split(' ').map(function(w){return w[0];}).slice(0,2).join('') +
+          '</div>' +
+          '<div>' +
+            '<div style="font-size:14px;font-weight:700;color:var(--tx)">' + t.n + '</div>' +
+            '<div style="font-size:11px;color:var(--tx3);margin-top:1px">' + t.bu + '</div>' +
+          '</div>' +
+          (flag ? '<span style="font-size:10px;font-weight:600;background:var(--yw-bg);color:var(--yw);padding:3px 8px;border-radius:20px;margin-left:8px">' + flag + '</span>' : '') +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span style="font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;background:'+stBg+';color:'+stClass+'">' + st.l + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--bdr)">' +
+        '<div style="padding:12px 16px;border-right:1px solid var(--bdr)">' +
+          '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:4px">Revenue</div>' +
+          '<div style="font-size:16px;font-weight:700;color:var(--tx)">' + fmtN(t.rev) + '</div>' +
+        '</div>' +
+        '<div style="padding:12px 16px;border-right:1px solid var(--bdr)">' +
+          '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:4px">Avg ticket</div>' +
+          '<div style="font-size:16px;font-weight:700;color:var(--tx)">' + fmtFull(t.avg) + '</div>' +
+        '</div>' +
+        '<div style="padding:12px 16px;border-right:1px solid var(--bdr)">' +
+          '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:4px">Conversion</div>' +
+          '<div style="font-size:16px;font-weight:700;color:'+convCol+'">' + t.conv + '%</div>' +
+        '</div>' +
+        '<div style="padding:12px 16px;border-right:1px solid var(--bdr)">' +
+          '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:4px">Jobs</div>' +
+          '<div style="font-size:16px;font-weight:700;color:var(--tx)">' + t.jobs + '</div>' +
+        '</div>' +
+        '<div style="padding:12px 16px">' +
+          '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:4px">Callbacks</div>' +
+          '<div style="font-size:16px;font-weight:700;color:'+cbcol+'">' + t.cb + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="padding:16px 20px">' +
+        '<div style="font-size:13px;color:var(--tx2);line-height:1.7">' + bio + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// Bio market filter
+document.querySelectorAll('[data-bio-bu]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('[data-bio-bu]').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    curBioBU = btn.getAttribute('data-bio-bu');
+    renderBio();
+  });
+});
 
 // ============ INIT ============
 document.addEventListener('click', function(e) {
