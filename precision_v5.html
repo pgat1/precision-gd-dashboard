@@ -241,10 +241,10 @@ select { outline: none; }
     <div class="sc-left">
       <span class="sc-count" id="tcount"></span>
       <div class="bu-filter">
-        <div class="bu-btn active" data-bu="all">All markets</div>
-        <div class="bu-btn" data-bu="Knoxville">Knoxville</div>
-        <div class="bu-btn" data-bu="Chattanooga">Chattanooga</div>
-        <div class="bu-btn" data-bu="Albany">Albany</div>
+        <div class="bu-btn active" data-bu="all" onclick="setBU('all',this)">All markets</div>
+        <div class="bu-btn" data-bu="Knoxville" onclick="setBU('Knoxville',this)">Knoxville</div>
+        <div class="bu-btn" data-bu="Chattanooga" onclick="setBU('Chattanooga',this)">Chattanooga</div>
+        <div class="bu-btn" data-bu="Albany" onclick="setBU('Albany',this)">Albany</div>
       </div>
     </div>
     <select class="sort-select" id="sortsel" onchange="curSort=this.value;renderScore()">
@@ -301,7 +301,7 @@ select { outline: none; }
 </div>
 
 <!-- TECH BIOS -->
-<div iew-bi" class="view" style="display:none">
+<div id="view-bi" class="view" style="display:none">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
     <div>
       <div style="font-size:20px;font-weight:700;color:var(--tx)">Tech bios</div>
@@ -1638,9 +1638,9 @@ document.querySelectorAll('.nt[data-view]').forEach(function(tab) {
 });
 
 // ============ BU FILTER ============
-document.querySelectorAll('.fbtn[data-bu]').forEach(function(btn) {
+document.querySelectorAll('.bu-btn[data-bu]').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    document.querySelectorAll('.fbtn[data-bu]').forEach(function(b){b.classList.remove('on');});
+    document.querySelectorAll('.bu-btn[data-bu]').forEach(function(b){b.classList.remove('active');});
     btn.classList.add('active');
     curBU = btn.getAttribute('data-bu');
     renderScore();
@@ -2788,6 +2788,8 @@ function renderJobTypes() {
   else if(curRange === '30') { dayStart = 63; dayEnd = 93; }
   else if(curRange === '14') { dayStart = 79; dayEnd = 93; }
   else if(curRange === '7') { dayStart = 86; dayEnd = 93; }
+  else if(curRange === 'mtd') { dayStart = 67; dayEnd = 93; }
+  else if(curRange === 'wktd') { dayStart = 90; dayEnd = 93; }
 
   // Filter jobs by date range
   var filteredJobs = JT_JOBS.filter(function(j) { return j.d >= dayStart && j.d <= dayEnd; });
@@ -2939,6 +2941,14 @@ document.querySelectorAll('[data-jt-bu]').forEach(function(btn) {
   });
 });
 
+function setBU(bu, el) {
+  document.querySelectorAll('.bu-btn[data-bu]').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  curBU = bu;
+  renderScore();
+  renderProjections();
+}
+
 // ============ INIT ============// ============ SCORECARD TABS ============
 var scCurrentTab = 'board';
 
@@ -2961,6 +2971,14 @@ function scShowTab(tab) {
     if(btnBoard) { btnBoard.style.background='var(--white)'; btnBoard.style.color='var(--tx-2)'; btnBoard.style.border='1px solid var(--gray-2)'; }
     renderProjections();
   }
+}
+
+function setBU(bu, el) {
+  document.querySelectorAll('.bu-btn[data-bu]').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  curBU = bu;
+  renderScore();
+  renderProjections();
 }
 
 // ============ INIT ============
